@@ -5,6 +5,8 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -55,7 +57,7 @@ public class MainActivity extends Activity {
     TextView voltageView, currentView, energyView, maxEnergyView;
     Handler bluetoothIn;
     WaveLoadingView mWaveLoadingView;
-    ArrayList<btData> btDataList;
+    static ArrayList<btData> btDataList;
 
 
 
@@ -106,6 +108,25 @@ public class MainActivity extends Activity {
         maxEnergyView = (TextView) findViewById(R.id.maxEnergy_tv);
 
         btDataList = new ArrayList<>();
+        btDataList.add(new btData("12,5", "3,5","0,01","3500","99",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,5","0,02","3500","98",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,1","0,03","3500","97",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,7","0,04","3500","96",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,9","0,06","3500","95",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,2","0,09","3500","94",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,5","0,10","3500","93",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,8","0,15","3500","92",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,1","0,20","3500","91",Calendar.getInstance().getTime()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,0","0,25","3500","90",Calendar.getInstance().getTime()));
 
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
 
@@ -146,6 +167,7 @@ public class MainActivity extends Activity {
             maxEnergyView.setText(mString);
         }
 
+        // Date currentTime = Calendar.getInstance().getTime();
 
         function1btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -322,7 +344,7 @@ public class MainActivity extends Activity {
                                         mWaveLoadingView.setProgressValue(percentage);
                                     }
                                 }
-                                btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),System.currentTimeMillis()));
+                               btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTime()));
                             }
                         }
                         recDataString.delete(0, recDataString.length());                    //clear all string data

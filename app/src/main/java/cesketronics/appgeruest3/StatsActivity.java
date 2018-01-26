@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.app.Activity;
@@ -15,13 +16,17 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import java.util.Calendar;
+
 
 public class StatsActivity extends Activity {
     Button backButton, loadStatsButton;
     btData loadedData;
     private static final String TAG = "bluetooth1";
-    ArrayList<btData> btDataArrayList = null;
+    ArrayList<btData> btDataStatsList;
 
 
 
@@ -32,6 +37,9 @@ public class StatsActivity extends Activity {
         setContentView(R.layout.activity_stats);
         backButton = (Button) findViewById(R.id.backBtn);
         loadStatsButton = (Button) findViewById(R.id.loadDataBtn);
+
+
+
 
 
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -49,7 +57,9 @@ public class StatsActivity extends Activity {
 
         loadStatsButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v){
-            btDataArrayList = getArrayList("btDataList");
+            btDataStatsList = getArrayList("btDataList");
+            Log.d(TAG,"Data loaded");
+
 
             }
         });
@@ -64,7 +74,7 @@ public class StatsActivity extends Activity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(StatsActivity.this );
         Gson gson = new Gson();
         String json = prefs.getString(key, null);
-        Type type = new TypeToken<ArrayList<String>>() {}.getType();
+        Type type = new TypeToken<ArrayList<btData>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
