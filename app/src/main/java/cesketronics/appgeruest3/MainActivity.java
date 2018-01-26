@@ -108,25 +108,39 @@ public class MainActivity extends Activity {
         maxEnergyView = (TextView) findViewById(R.id.maxEnergy_tv);
 
         btDataList = new ArrayList<>();
-        btDataList.add(new btData("12,5", "3,5","0,01","3500","99",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,5","0,02","3500","98",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,1","0,03","3500","97",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,7","0,04","3500","96",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,9","0,06","3500","95",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,2","0,09","3500","94",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,5","0,10","3500","93",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,8","0,15","3500","92",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,1","0,20","3500","91",Calendar.getInstance().getTime()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,0","0,25","3500","90",Calendar.getInstance().getTime()));
+
+
+
+
+        btDataList.add(new btData("12.5", "3.5","0.01","3500","99",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("11.5", "3.5","0.02","3500","98",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("10.5", "3.1","0.03","3500","97",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("9.5", "3.7","0.04","3500","96",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("8.5", "3.6","0.05","3500","96",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("8.5", "3.7","0.06","3500","96",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("8.5", "4.0","0.07","3500","95",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("8.2", "3.7","0.08","3500","94",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("8.0", "5","0.09","3500","94",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("7.0", "3.7","0.1","3500","93",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("6.0", "3.7","0.5","3500","93",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("5.0", "3.7","0.6","3500","93",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("4.0", "3.7","0.7","3500","93",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(1000);
+        btDataList.add(new btData("0.0", "3.7","0.8","3500","93",Calendar.getInstance().getTimeInMillis()));
+
+
 
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
 
@@ -138,14 +152,12 @@ public class MainActivity extends Activity {
         mWaveLoadingView.setCenterTitleStrokeWidth(2);
 
         //mWaveLoadingView.setBottomTitleSize(18);
-        mWaveLoadingView.setProgressValue(100);
+        mWaveLoadingView.setProgressValue(20);
         mWaveLoadingView.setBorderWidth(10);
         mWaveLoadingView.setAmplitudeRatio(20);
 
-        mWaveLoadingView.setWaveColor(Color.argb(255,50,205,50)); // green -> 100%
-        // mWaveLoadingView.setWaveColor(Color.argb(255,255,255,0)); // yellow -> 75%
-        // mWaveLoadingView.setWaveColor(Color.argb(255,255,140,0)); // orange -> 50%
-        // mWaveLoadingView.setWaveColor(Color.argb(255,255,0,0)); // red -> 25%
+        mWaveLoadingView.setWaveColor(Color.argb(255,255,0,0));
+
 
         mWaveLoadingView.setBorderColor(Color.DKGRAY);
         // mWaveLoadingView.setTopTitleStrokeColor(Color.MAGENTA);
@@ -344,7 +356,7 @@ public class MainActivity extends Activity {
                                         mWaveLoadingView.setProgressValue(percentage);
                                     }
                                 }
-                               btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTime()));
+                               btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
                             }
                         }
                         recDataString.delete(0, recDataString.length());                    //clear all string data

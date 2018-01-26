@@ -13,9 +13,9 @@
 
         <com.jjoe64.graphview.GraphView
             android:layout_width="wrap_content"
-            android:layout_height="200dip"
+            android:layout_height="400dp"
             android:id="@+id/graph"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -26,6 +26,27 @@
                 android:layout_height="wrap_content"
                 android:text="Back"
                 android:id="@+id/backBtn"
+                android:layout_weight="1"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="V"
+                android:id="@+id/enableVoltageBtn"
+                android:layout_weight="1"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="I"
+                android:id="@+id/enableCurrentBtn"
+                android:layout_weight="1"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="E"
+                android:id="@+id/enableEnergyBtn"
                 android:layout_weight="1"/>
 
             <Button

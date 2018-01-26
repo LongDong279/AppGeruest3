@@ -14,9 +14,9 @@ public class btData {
     String btDataEnergy;
     String btDataMaxEnergySet;
     String btDataEnergyPercetage;
-    Date btTime;
+    long btTime;
 
-    public btData(String btDataVoltage, String btDataCurrent, String btDataEnergy, String btDataMaxEnergySet, String btDataEnergyPercetage, Date btTime) {
+    public btData(String btDataVoltage, String btDataCurrent, String btDataEnergy, String btDataMaxEnergySet, String btDataEnergyPercetage, long btTime) {
         this.btDataVoltage = btDataVoltage;
         this.btDataCurrent = btDataCurrent;
         this.btDataEnergy = btDataEnergy;
@@ -45,7 +45,7 @@ public class btData {
         return btDataEnergyPercetage;
     }
 
-    public Date getBtTime() {
+    public long getBtTime() {
         return btTime;
     }
 
@@ -69,7 +69,7 @@ public class btData {
         this.btDataEnergyPercetage = btDataEnergyPercetage;
     }
 
-    public void setBtTime(Date btTime) {
+    public void setBtTime(long btTime) {
         this.btTime = btTime;
     }
 
