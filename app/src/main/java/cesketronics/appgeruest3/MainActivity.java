@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.lang.String;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,8 +47,7 @@ import me.itangqi.waveloadingview.WaveLoadingView;
 import android.graphics.Color;
 import android.app.Notification;
 import com.google.gson.*;
-
-
+import com.google.gson.reflect.TypeToken;
 
 
 public class MainActivity extends Activity {
@@ -109,36 +109,11 @@ public class MainActivity extends Activity {
 
         btDataList = new ArrayList<>();
 
+        btDataList = getArrayList("btDataList");
 
 
 
-        btDataList.add(new btData("12.5", "3.5","0.01","3500","99",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("11.5", "3.5","0.02","3500","98",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("10.5", "3.1","0.03","3500","97",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("9.5", "3.7","0.04","3500","96",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("8.5", "3.6","0.05","3500","96",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("8.5", "3.7","0.06","3500","96",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("8.5", "4.0","0.07","3500","95",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("8.2", "3.7","0.08","3500","94",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("8.0", "5","0.09","3500","94",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("7.0", "3.7","0.1","3500","93",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("6.0", "3.7","0.5","3500","93",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("5.0", "3.7","0.6","3500","93",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("4.0", "3.7","0.7","3500","93",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(1000);
-        btDataList.add(new btData("0.0", "3.7","0.8","3500","93",Calendar.getInstance().getTimeInMillis()));
+
 
 
 
@@ -178,6 +153,8 @@ public class MainActivity extends Activity {
         if (maxEnergy != 0){
             maxEnergyView.setText(mString);
         }
+
+
 
         // Date currentTime = Calendar.getInstance().getTime();
 
@@ -597,6 +574,7 @@ public class MainActivity extends Activity {
         saveArrayList(btDataList, "btDataList");
         btAdapter.disable();
         Log.d(TAG, "finishing APP");
+        handlerInBackground.removeCallbacks(myRunnableInBackground);
         handlerInBackground.removeCallbacksAndMessages(myRunnableInBackground);
         finish();
        // SystemClock.sleep(5000);
@@ -629,6 +607,14 @@ public class MainActivity extends Activity {
         String json = gson.toJson(list);
         editor.putString(key, json);
         editor.apply();     // This line is IMPORTANT !!!
+    }
+
+    public ArrayList<btData> getArrayList(String key){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this );
+        Gson gson = new Gson();
+        String json = prefs.getString(key, null);
+        Type type = new TypeToken<ArrayList<btData>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 
 
