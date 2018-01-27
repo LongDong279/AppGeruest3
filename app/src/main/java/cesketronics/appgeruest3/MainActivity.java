@@ -7,27 +7,17 @@ import java.lang.String;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.nfc.Tag;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,7 +28,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.SharedPreferences;
@@ -72,8 +61,8 @@ public class MainActivity extends Activity {
     static boolean dataReceived = false;
     static boolean UISetFirstTime = true;
     static boolean percentageDifference = false;
-    Handler handlerInBackground;
-    Runnable myRunnableInBackground;
+    Thread backgroundThread;
+    volatile boolean stopWorker, stopBackground;
 
 
 
@@ -183,13 +172,10 @@ public class MainActivity extends Activity {
 
         function3btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                /*
-                startActivity(new Intent(MainActivity.this, StatsActivity.class));
-                finish();
-                */
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
+
             }
         });
     }
@@ -252,7 +238,6 @@ public class MainActivity extends Activity {
         super.onStart();
     }
 
-
     @Override
     public void onPause() {
         super.onPause();
@@ -261,13 +246,12 @@ public class MainActivity extends Activity {
 
     }
 
-
     @Override
     public void onResume(){
 
         super.onResume();
         Log.d(TAG, "...In onResume()...");
-
+        stopWorker = false;
         new Thread (new Runnable() {
             public void run() {
                 // a potentially  time consuming task
@@ -372,49 +356,53 @@ public class MainActivity extends Activity {
 
     private void receiveDataInBackground() {
         Log.d(TAG, "receive Data in Background");
-        handlerInBackground = new Handler();
-        handlerInBackground.postDelayed(myRunnableInBackground = new Runnable() {
-            @Override
+        // NEW SHIT
+        stopBackground = false;
+        backgroundThread = new Thread(new Runnable() {
             public void run() {
-                dataReceived=false;
-                Log.d(TAG, "in receiveBackground");
-                openBT();
-                //
-                bluetoothIn = new Handler() {
-                    public void handleMessage(Message msg) {
-                        if (msg.what == handlerState) {                                     //if message is what we want
-                            String readMessage = (String) msg.obj;                             // msg.arg1 = bytes from connect thread
-                            recDataString.append(readMessage);                                //keep appending to string until ~
-                            int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                            if (endOfLineIndex > 0) {                                           // make sure there data before ~
-                                String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
+                while (!Thread.currentThread().isInterrupted() && !stopBackground) {
+                    try {
+                        Log.d(TAG, "in Background Thread");
+                        openBT();
+                        bluetoothIn = new Handler() {
+                            public void handleMessage(Message msg) {
+                                if (msg.what == handlerState) {                                     //if message is what we want
+                                    String readMessage = (String) msg.obj;                             // msg.arg1 = bytes from connect thread
+                                    recDataString.append(readMessage);                                //keep appending to string until ~
+                                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
+                                    if (endOfLineIndex > 0) {                                           // make sure there data before ~
+                                        String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
 
-                                if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
-                                {
-                                    dataInPrint = dataInPrint.substring(1);                     //erase the first character
-                                    String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
-                                    String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
+                                        if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
+                                        {
+                                            dataInPrint = dataInPrint.substring(1);                     //erase the first character
+                                            String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
+                                            String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
 
-                                    for (int i = 0; i < recSensorDataArray.length; i++) {
-                                        sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
+                                            for (int i = 0; i < recSensorDataArray.length; i++) {
+                                                sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
+                                            }
+
+                                            Float E = Float.parseFloat(sensorArray[2]);
+                                            int percentage = getPercentage(E);
+                                            comparePercentage(percentage);
+
+                                        }
+                                        recDataString.delete(0, recDataString.length());                    //clear all string data
+                                        dataReceived = true;
                                     }
-
-                                    Float E = Float.parseFloat(sensorArray[2]);
-                                    int percentage = getPercentage(E);
-                                    comparePercentage(percentage);
-
                                 }
-                                recDataString.delete(0, recDataString.length());                    //clear all string data
-                                dataReceived = true;
                             }
-                        }
+                        };
+                        //
+                        if(dataReceived==true){closeBT();}
+                        backgroundThread.sleep(60000);
+                    } catch (Exception ex) {
+                        stopBackground = true;
                     }
-                };
-                //
-                if(dataReceived==true){closeBT();}
-                handlerInBackground.postDelayed(this, 60000);
+                }
             }
-        }, 60000);
+        });
     }
 
     private void openBT(){
@@ -488,8 +476,6 @@ public class MainActivity extends Activity {
             }
         }
     }
-
-
 
     private void errorExit(String title, String message){
         Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
@@ -574,15 +560,9 @@ public class MainActivity extends Activity {
         saveArrayList(btDataList, "btDataList");
         btAdapter.disable();
         Log.d(TAG, "finishing APP");
-        handlerInBackground.removeCallbacks(myRunnableInBackground);
-        handlerInBackground.removeCallbacksAndMessages(myRunnableInBackground);
+        stopBackground = true;
         finish();
-       // SystemClock.sleep(5000);
-        // System.exit(0);
-
     }
-
-
 
     @Override
     public void onBackPressed() {
@@ -597,8 +577,6 @@ public class MainActivity extends Activity {
                 .setNegativeButton("No", null)
                 .show();
     }
-
-
 
     public void saveArrayList(ArrayList<btData> list, String key){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

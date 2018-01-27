@@ -115,14 +115,9 @@ public class StatsActivity extends Activity {
 
         backButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                /*
-                startActivity(new Intent(StatsActivity.this, MainActivity.class));
-                finish();
-                */
                 Intent intent = new Intent(StatsActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-
             }
         });
 
@@ -162,11 +157,10 @@ public class StatsActivity extends Activity {
                         graph.removeAllSeries();
                     }
 
-
                     for (int i = 0; i < btDataStatsList.size(); i++) {
                         DataPoint pVoltage = new DataPoint(btDataStatsList.get(i).btTime, (Double.parseDouble(btDataStatsList.get(i).btDataVoltage)));
                         DataPoint pCurrent = new DataPoint(btDataStatsList.get(i).btTime, (Double.parseDouble(btDataStatsList.get(i).btDataCurrent)));
-                        DataPoint pEnergy = new DataPoint(btDataStatsList.get(i).btTime, (Double.parseDouble(btDataStatsList.get(i).btDataEnergy)));
+                        DataPoint pEnergy = new DataPoint(btDataStatsList.get(i).btTime, (Double.parseDouble(btDataStatsList.get(i).btDataMaxEnergySet)-(Double.parseDouble(btDataStatsList.get(i).btDataEnergy))));
 
                         valuesVoltage[i] = pVoltage;
                         valuesCurrent[i] = pCurrent;
