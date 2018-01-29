@@ -244,7 +244,7 @@ public class MainActivity extends Activity {
         */
 
         doBindService();
-
+        startService(new Intent(this, BluetoothHelper.class));
 
        // updateUi();
        // updateDataList();
@@ -593,7 +593,6 @@ public class MainActivity extends Activity {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             btHelperService = ((BluetoothHelper.btBinder)service).getService();
             Toast.makeText(getBaseContext(), "Service connected", Toast.LENGTH_SHORT).show();
-
         }
 
         @Override

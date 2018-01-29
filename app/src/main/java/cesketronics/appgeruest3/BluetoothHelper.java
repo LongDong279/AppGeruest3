@@ -77,6 +77,9 @@ public class BluetoothHelper extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("onStartCommand", "Startid: "+startId + ":" + intent);
         Log.d("BT SERVICE", "SERVICE STARTED");
+
+
+
         bluetoothIn = new Handler() {
 
             public void handleMessage(android.os.Message msg) {
@@ -176,6 +179,7 @@ public class BluetoothHelper extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         bluetoothIn.removeCallbacksAndMessages(null);
         stopThread = true;
         if (mConnectedThread != null) {
@@ -184,6 +188,7 @@ public class BluetoothHelper extends Service {
         if (mConnectingThread != null) {
             mConnectingThread.closeSocket();
         }
+
         Log.d("SERVICE", "onDestroy");
     }
 
