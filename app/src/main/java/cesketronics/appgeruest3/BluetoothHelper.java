@@ -12,10 +12,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import static android.content.ContentValues.TAG;
@@ -28,6 +33,11 @@ public class BluetoothHelper extends Service {
     final int handlerState = 0;                        //used to identify handler message
     Handler bluetoothIn;
     private BluetoothAdapter btAdapter = null;
+    public static final long NOTIFY_INTERVAL = 10 * 1000;
+    // run on another Thread to avoid crash
+    private Handler mHandler = new Handler();
+    // timer handling
+    private Timer mTimer = null;
 
     private final IBinder mBinder = new btBinder();
 
@@ -71,12 +81,15 @@ public class BluetoothHelper extends Service {
         super.onCreate();
         Log.d("BT SERVICE", "SERVICE CREATED");
         stopThread = false;
-    }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("onStartCommand", "Startid: "+startId + ":" + intent);
-        Log.d("BT SERVICE", "SERVICE STARTED");
+        if(mTimer != null) {
+            mTimer.cancel();
+        } else {
+            // recreate new
+            mTimer = new Timer();
+        }
+        // schedule task
+        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
 
 
 
@@ -158,6 +171,41 @@ public class BluetoothHelper extends Service {
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
         checkBTState();
+
+
+    }
+
+    class TimeDisplayTimerTask extends TimerTask {
+
+        @Override
+        public void run() {
+            // run on another thread
+            mHandler.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    // display toast
+                    Toast.makeText(getApplicationContext(), getDateTime(),
+                            Toast.LENGTH_SHORT).show();
+                }
+
+            });
+        }
+
+        private String getDateTime() {
+            // get date time in custom format
+            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
+            return sdf.format(new Date());
+        }
+
+    }
+
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("onStartCommand", "Startid: "+startId + ":" + intent);
+        Log.d("BT SERVICE", "SERVICE STARTED");
+        // Handler, btAdapter & checkBTState was here before
         return super.onStartCommand(intent, flags, startId);
     }
 

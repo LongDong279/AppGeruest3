@@ -244,7 +244,7 @@ public class MainActivity extends Activity {
         */
 
         doBindService();
-        startService(new Intent(this, BluetoothHelper.class));
+        //startService(new Intent(this, BluetoothHelper.class));
 
        // updateUi();
        // updateDataList();
