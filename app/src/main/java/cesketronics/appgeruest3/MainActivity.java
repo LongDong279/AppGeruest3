@@ -55,12 +55,18 @@ public class MainActivity extends Activity {
     private BluetoothSocket btSocket = null;
     private OutputStream outStream = null;
     private StringBuilder recDataString = new StringBuilder();
+    String voltage, current, energy;
+
+
     static int maxEnergy = 0;
     int oPercent=0;
     int nPercent=0;
+    int percentage = 0;
+
     static boolean dataReceived = false;
     static boolean UISetFirstTime = true;
     static boolean percentageDifference = false;
+
     Thread backgroundThread;
     volatile boolean stopWorker, stopBackground;
 
@@ -77,6 +83,8 @@ public class MainActivity extends Activity {
     private static String address = "98:D3:31:FC:3A:25";
 
     /** Called when the activity is first created. */
+
+
 
 
 
@@ -248,10 +256,9 @@ public class MainActivity extends Activity {
 
     @Override
     public void onResume(){
-
         super.onResume();
         Log.d(TAG, "...In onResume()...");
-        stopWorker = false;
+        // stopWorker = false;
         new Thread (new Runnable() {
             public void run() {
                 // a potentially  time consuming task
@@ -280,6 +287,13 @@ public class MainActivity extends Activity {
                             for (int i = 0; i < recSensorDataArray.length; i++) {
                                 sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
                             }
+
+                            voltage = sensorArray[0];
+                            current = sensorArray[1];
+                            energy = sensorArray[2];
+
+                            /*
+
                             voltageView.setText("Spannung = " + sensorArray[0] + "V");    //update the textviews with sensor values
                             currentView.setText("Strom = " + sensorArray[1] + "A");
                             energyView.setText("Energie = " + sensorArray[2] + "Wh");
@@ -317,8 +331,9 @@ public class MainActivity extends Activity {
                                         mWaveLoadingView.setProgressValue(percentage);
                                     }
                                 }
-                               btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
+                                btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
                             }
+                            */
                         }
                         recDataString.delete(0, recDataString.length());                    //clear all string data
                     }
@@ -326,7 +341,56 @@ public class MainActivity extends Activity {
             }
         };
 
+        updateUi();
+        updateDataList();
 
+
+    }
+
+    private void updateDataList() {
+        btDataList.add(new btData(voltage,current,energy,String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
+    }
+
+    private void updateUi() {
+        voltageView.setText("Spannung = " + voltage + "V");    //update the textviews with sensor values
+        currentView.setText("Strom = " + current + "A");
+        energyView.setText("Energie = " + energy+ "Wh");
+
+        Float E = Float.parseFloat(energy);
+        if (maxEnergy == 0) {
+            mWaveLoadingView.setCenterTitle("Enter E first");
+        } else {
+            percentage = getPercentage(E);
+            comparePercentage(percentage);
+            if(UISetFirstTime == true){
+                if (percentage <= 25) {
+                    mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
+                } else if (percentage <= 50) {
+                    mWaveLoadingView.setWaveColor(Color.argb(255, 255, 140, 0));
+                } else if (percentage <= 75) {
+                    mWaveLoadingView.setWaveColor(Color.argb(255, 255, 255, 0));
+                } else if (percentage <= 100) {
+                    mWaveLoadingView.setWaveColor(Color.argb(255, 50, 205, 50));
+                }
+                mWaveLoadingView.setCenterTitle(String.valueOf(percentage) + " %");
+                mWaveLoadingView.setProgressValue(percentage);
+                UISetFirstTime = false;
+            } else{
+                if(percentageDifference == true){
+                    if (percentage <= 25) {
+                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
+                    } else if (percentage <= 50) {
+                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 140, 0));
+                    } else if (percentage <= 75) {
+                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 255, 0));
+                    } else if (percentage <= 100) {
+                        mWaveLoadingView.setWaveColor(Color.argb(255, 50, 205, 50));
+                    }
+                    mWaveLoadingView.setCenterTitle(String.valueOf(percentage) + " %");
+                    mWaveLoadingView.setProgressValue(percentage);
+                }
+            }
+        }
     }
 
     @Override
@@ -342,13 +406,14 @@ public class MainActivity extends Activity {
             }
         }
         closeBT();
-        receiveDataInBackground();
+        //receiveDataInBackground();
 
     }
 
     private void closeBT() {
         try     {
             btSocket.close();
+            btAdapter.disable();
         } catch (IOException e2) {
             errorExit("Fatal Error", "In closeBT() and failed to close socket." + e2.getMessage() + ".");
         }
@@ -456,7 +521,7 @@ public class MainActivity extends Activity {
     public void onRestart() {
         super.onRestart();
         Log.d(TAG, "...In onRestart()...");
-        closeBT();
+        // closeBT();
     }
 
     private void checkBTState() {
@@ -558,9 +623,9 @@ public class MainActivity extends Activity {
         Log.d(TAG, "...In onDestroy...");
         // Write to SharedPref.
         saveArrayList(btDataList, "btDataList");
-        btAdapter.disable();
+        // btAdapter.disable();
         Log.d(TAG, "finishing APP");
-        stopBackground = true;
+        // stopBackground = true;
         finish();
     }
 
