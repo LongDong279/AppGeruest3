@@ -55,8 +55,6 @@ public class MainActivity extends Activity {
     BluetoothHelper btHelperService;
     boolean mIsBound = false;
 
-
-
     static int maxEnergy = 0;
     int oPercent=0;
     int nPercent=0;
@@ -71,7 +69,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         // declare all visual xml objects as java objects
-
         function1btn = (Button) findViewById(R.id.function1btn);
         function2btn = (Button) findViewById(R.id.function2btn);
         function3btn = (Button) findViewById(R.id.function3btn);
@@ -79,32 +76,20 @@ public class MainActivity extends Activity {
         currentView = (TextView) findViewById(R.id.current_tv);
         energyView = (TextView) findViewById(R.id.energy_tv);
         maxEnergyView = (TextView) findViewById(R.id.maxEnergy_tv);
+        mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
 
         btDataList = new ArrayList<>();
         btDataList = getArrayList("btDataList");
 
-
-        mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
-
         mWaveLoadingView.setShapeType(WaveLoadingView.ShapeType.CIRCLE);
-        // mWaveLoadingView.setTopTitle("Ladezustand");
         mWaveLoadingView.setCenterTitleColor(Color.DKGRAY);
-        //mWaveLoadingView.setCenterTitleSize(10);
         mWaveLoadingView.setCenterTitleStrokeColor(Color.LTGRAY);
         mWaveLoadingView.setCenterTitleStrokeWidth(2);
-
-        //mWaveLoadingView.setBottomTitleSize(18);
         mWaveLoadingView.setProgressValue(20);
         mWaveLoadingView.setBorderWidth(10);
         mWaveLoadingView.setAmplitudeRatio(20);
-
         mWaveLoadingView.setWaveColor(Color.argb(255,255,0,0));
-
-
         mWaveLoadingView.setBorderColor(Color.DKGRAY);
-        // mWaveLoadingView.setTopTitleStrokeColor(Color.MAGENTA);
-        // mWaveLoadingView.setTopTitleStrokeWidth(5);
-        //mWaveLoadingView.setBottomTitle("Bottom Title");
         mWaveLoadingView.setCenterTitle("No BT-Device connected");
         mWaveLoadingView.setAnimDuration(5000);
         mWaveLoadingView.pauseAnimation();
@@ -124,10 +109,10 @@ public class MainActivity extends Activity {
         function1btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 //mConnectedThread.write("0"); // k
+                btHelperService.writeToSerial("0");
                 Toast.makeText(getBaseContext(), "Set Energy", Toast.LENGTH_SHORT).show();
                 String s = maxEnergyView.getText().toString();
                 maxEnergy = Integer.parseInt(s);
-
                 Editor mEditor = mPrefsMaxCap.edit();
                 mEditor.putString("MaxCap", s).commit();
             }
@@ -136,6 +121,7 @@ public class MainActivity extends Activity {
         function2btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 //mConnectedThread.write("1"); // r
+                btHelperService.writeToSerial("1");
                 Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
                 String s = "0";
                 SharedPreferences.Editor mEditor = mPrefsMaxCap.edit();
@@ -149,7 +135,6 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(MainActivity.this, StatsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-
             }
         });
     }
@@ -195,15 +180,6 @@ public class MainActivity extends Activity {
         notificationManager.notify(0, notification);
     }
 
-    /*
-
-    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
-        return  device.createRfcommSocketToServiceRecord(MY_UUID);
-        //creates secure outgoing connecetion with BT device using UUID
-    }
-
-    */
-
     private int getPercentage(float E){
         float eNow = E;
         float percentage = 100*(1-(eNow/maxEnergy));
@@ -214,40 +190,27 @@ public class MainActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
-
-        //Intent intent = new Intent(this, BluetoothHelper.class);
-        //bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
     }
 
     @Override
     public void onPause() {
         super.onPause();
         Log.d(TAG, "...In onPause()...");
-
-
     }
 
     @Override
     public void onResume(){
         super.onResume();
         Log.d(TAG, "...In onResume()...");
-        // stopWorker = false;
-        /*
-        new Thread (new Runnable() {
-            public void run() {
-                // a potentially  time consuming task
-                Log.d(TAG, "in Thread");
-                // openBT();
-            }
-        }).start();
-        */
-
         doBindService();
-        //startService(new Intent(this, BluetoothHelper.class));
 
-       // updateUi();
-       // updateDataList();
+        /*
+
+        if((btHelperService.getVoltage() != null) && (btHelperService.getCurrent()!= null) && (btHelperService.getEnergy() != null)){
+            updateUi();
+            updateDataList();
+        }
+        */
     }
 
     @Override
@@ -303,138 +266,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /*
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.d(TAG, "...In onStop()...");
-
-        if (outStream != null) {
-            try {
-                outStream.flush();
-            } catch (IOException e) {
-                errorExit("Fatal Error", "In onStop() and failed to flush output stream: " + e.getMessage() + ".");
-            }
-        }
-        //closeBT();
-        //receiveDataInBackground();
-
-    }
-    */
-
-    /*
-    private void closeBT() {
-        try     {
-            btSocket.close();
-            btAdapter.disable();
-        } catch (IOException e2) {
-            errorExit("Fatal Error", "In closeBT() and failed to close socket." + e2.getMessage() + ".");
-        }
-    }
-    */
-
-    /*
-    private void receiveDataInBackground() {
-        Log.d(TAG, "receive Data in Background");
-        // NEW SHIT
-        stopBackground = false;
-        backgroundThread = new Thread(new Runnable() {
-            public void run() {
-                while (!Thread.currentThread().isInterrupted() && !stopBackground) {
-                    try {
-                        Log.d(TAG, "in Background Thread");
-                        openBT();
-                        bluetoothIn = new Handler() {
-                            public void handleMessage(Message msg) {
-                                if (msg.what == handlerState) {                                     //if message is what we want
-                                    String readMessage = (String) msg.obj;                             // msg.arg1 = bytes from connect thread
-                                    recDataString.append(readMessage);                                //keep appending to string until ~
-                                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                                    if (endOfLineIndex > 0) {                                           // make sure there data before ~
-                                        String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
-
-                                        if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
-                                        {
-                                            dataInPrint = dataInPrint.substring(1);                     //erase the first character
-                                            String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
-                                            String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
-
-                                            for (int i = 0; i < recSensorDataArray.length; i++) {
-                                                sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
-                                            }
-
-                                            Float E = Float.parseFloat(sensorArray[2]);
-                                            int percentage = getPercentage(E);
-                                            comparePercentage(percentage);
-
-                                        }
-                                        recDataString.delete(0, recDataString.length());                    //clear all string data
-                                        dataReceived = true;
-                                    }
-                                }
-                            }
-                        };
-                        //
-                        if(dataReceived==true){closeBT();}
-                        backgroundThread.sleep(60000);
-                    } catch (Exception ex) {
-                        stopBackground = true;
-                    }
-                }
-            }
-        });
-    }
-
-    */
-    /*
-    private void openBT(){
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
-        checkBTState();
-        Log.d(TAG, "...openBT - try connect...");
-        // Set up a pointer to the remote node using it's address.
-        BluetoothDevice device = btAdapter.getRemoteDevice(address);
-
-        // Two things are needed to make a connection:
-        //   A MAC address, which we got above.
-        //   A Service ID or UUID.  In this case we are using the
-        //     UUID for SPP.
-
-        try {
-            btSocket = createBluetoothSocket(device);
-        } catch (IOException e1) {
-            errorExit("Fatal Error", "In openBT() and socket create failed: " + e1.getMessage() + ".");
-        }
-
-        // Discovery is resource intensive.  Make sure it isn't going on
-        // when you attempt to connect and pass your message.
-        btAdapter.cancelDiscovery();
-
-        // Establish the connection.  This will block until it connects.
-        Log.d(TAG, "...Connecting...");
-        try {
-            btSocket.connect();
-            Log.d(TAG, "...Connection ok...");
-        } catch (IOException e) {
-            try {
-                btSocket.close();
-            } catch (IOException e2) {
-                errorExit("Fatal Error", "In openBT() and unable to close socket during connection failure" + e2.getMessage() + ".");
-            }
-        }
-
-        // Create a data stream so we can talk to server.
-        Log.d(TAG, "...in openBT() Create Socket...");
-
-        try {
-            outStream = btSocket.getOutputStream();
-        } catch (IOException e) {
-            errorExit("Fatal Error", "In onStart() and output stream creation failed:" + e.getMessage() + ".");
-        }
-        mConnectedThread = new ConnectedThread(btSocket);
-        mConnectedThread.start();
-    }
-    */
-
     @Override
     public void onRestart() {
         super.onRestart();
@@ -442,105 +273,10 @@ public class MainActivity extends Activity {
         // closeBT();
     }
 
-    /*
-
-    private void checkBTState() {
-        // Check for Bluetooth support and then check to make sure it is turned on
-        // Emulator doesn't support Bluetooth and will return null
-        if(btAdapter==null) {
-            errorExit("Fatal Error", "Bluetooth not supported");
-        } else {
-            if (btAdapter.isEnabled()) {
-                Log.d(TAG, "...in checkBTState() Bluetooth ON...");
-            } else {
-                btAdapter.enable();
-                SystemClock.sleep(2000);
-                // Prompt user to turn on Bluetooth
-                // Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                // startActivityForResult(enableBtIntent, 1);
-            }
-        }
-    }
-    */
-
     private void errorExit(String title, String message){
         Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
         finish();
     }
-
-    /*
-    private void sendData(String message) {
-        byte[] msgBuffer = message.getBytes();
-
-        Log.d(TAG, "...Send data: " + message + "...");
-
-        try {
-            outStream.write(msgBuffer);
-        } catch (IOException e) {
-            String msg = "In onResume() and an exception occurred during write: " + e.getMessage();
-            if (address.equals("00:00:00:00:00:00"))
-                msg = msg + ".\n\nUpdate your server address from 00:00:00:00:00:00 to the correct address on line 35 in the java code";
-            msg = msg +  ".\n\nCheck that the SPP UUID: " + MY_UUID.toString() + " exists on server.\n\n";
-
-            errorExit("Fatal Error", msg);
-        }
-    }
-    */
-
-    // create new class for connect thread
-    /*
-    private class ConnectedThread extends Thread {
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-
-        //creation of the connect thread
-        public ConnectedThread(BluetoothSocket socket) {
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            try {
-                //Create I/O streams for connection
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) { }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
-
-        public void run() {
-            byte[] buffer = new byte[256];
-            int bytes;
-
-            // Keep looping to listen for received messages
-            while (true) {
-                try {
-                    bytes = mmInStream.read(buffer);            //read bytes from input buffer
-                    String readMessage = new String(buffer, 0, bytes);
-                    // Send the obtained bytes to the UI Activity via handler
-                    bluetoothIn.obtainMessage(handlerState, bytes, -1, readMessage).sendToTarget();
-                } catch (IOException e) {
-                    break;
-                }
-            }
-        }
-        //write method
-        public void write(String input) {
-            byte[] msgBuffer = input.getBytes();           //converts entered String into bytes
-            // comboxView.append(input);
-            try {
-                mmOutStream.write(msgBuffer);                //write bytes over BT connection via outstream
-            } catch (IOException e) {
-                //if you cannot write, close the application
-                Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
-                finish();
-
-            }
-        }
-
-
-    }
-    */
 
     @Override
     public void onDestroy(){

@@ -1,5 +1,6 @@
 package cesketronics.appgeruest3;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
@@ -10,6 +11,7 @@ import android.hardware.camera2.params.BlackLevelPattern;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -33,13 +36,15 @@ public class BluetoothHelper extends Service {
     final int handlerState = 0;                        //used to identify handler message
     Handler bluetoothIn;
     private BluetoothAdapter btAdapter = null;
-    public static final long NOTIFY_INTERVAL = 10 * 1000;
+    public static final long NOTIFY_INTERVAL = 10000;
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
     // timer handling
     private Timer mTimer = null;
 
     private final IBinder mBinder = new btBinder();
+
+    private boolean dataReceived = false;
 
 
     private ConnectingThread mConnectingThread;
@@ -79,20 +84,6 @@ public class BluetoothHelper extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("BT SERVICE", "SERVICE CREATED");
-        stopThread = false;
-
-        if(mTimer != null) {
-            mTimer.cancel();
-        } else {
-            // recreate new
-            mTimer = new Timer();
-        }
-        // schedule task
-        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-
-
-
         bluetoothIn = new Handler() {
 
             public void handleMessage(android.os.Message msg) {
@@ -119,49 +110,6 @@ public class BluetoothHelper extends Service {
                             voltage = sensorArray[0];
                             current = sensorArray[1];
                             energy = sensorArray[2];
-
-                            /*
-
-                            voltageView.setText("Spannung = " + sensorArray[0] + "V");    //update the textviews with sensor values
-                            currentView.setText("Strom = " + sensorArray[1] + "A");
-                            energyView.setText("Energie = " + sensorArray[2] + "Wh");
-                            Float E = Float.parseFloat(sensorArray[2]);
-                            if (maxEnergy == 0) {
-                                mWaveLoadingView.setCenterTitle("Enter E first");
-                            } else {
-                                int percentage = getPercentage(E);
-                                comparePercentage(percentage);
-                                if(UISetFirstTime == true){
-                                    if (percentage <= 25) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
-                                    } else if (percentage <= 50) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 140, 0));
-                                    } else if (percentage <= 75) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 255, 0));
-                                    } else if (percentage <= 100) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 50, 205, 50));
-                                    }
-                                    mWaveLoadingView.setCenterTitle(String.valueOf(percentage) + " %");
-                                    mWaveLoadingView.setProgressValue(percentage);
-                                    UISetFirstTime = false;
-                                } else{
-                                    if(percentageDifference == true){
-                                        if (percentage <= 25) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
-                                        } else if (percentage <= 50) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 255, 140, 0));
-                                        } else if (percentage <= 75) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 255, 255, 0));
-                                        } else if (percentage <= 100) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 50, 205, 50));
-                                        }
-                                        mWaveLoadingView.setCenterTitle(String.valueOf(percentage) + " %");
-                                        mWaveLoadingView.setProgressValue(percentage);
-                                    }
-                                }
-                                btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
-                            }
-                            */
                         }
                     }
                 }
@@ -169,10 +117,19 @@ public class BluetoothHelper extends Service {
             }
         };
 
-        btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
-        checkBTState();
+        Log.d("BT SERVICE", "SERVICE CREATED");
+        stopThread = false;
 
 
+
+        if(mTimer != null) {
+            mTimer.cancel();
+        } else {
+            // recreate new
+            mTimer = new Timer();
+        }
+        // schedule task
+        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
     }
 
     class TimeDisplayTimerTask extends TimerTask {
@@ -185,12 +142,32 @@ public class BluetoothHelper extends Service {
                 @Override
                 public void run() {
                     // display toast
-                    Toast.makeText(getApplicationContext(), getDateTime(),
+                    btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
+                    btAdapter.enable();
+                    SystemClock.sleep(2000);
+                    checkBTState();
+                    Toast.makeText(getApplicationContext(), getDateTime() +" "+ NOTIFY_INTERVAL,
                             Toast.LENGTH_SHORT).show();
+                    if (dataReceived){
+                        bluetoothIn.removeCallbacksAndMessages(null);
+                        stopThread = true;
+                        if (mConnectedThread != null) {
+                            mConnectedThread.closeStreams();
+                        }
+                        if (mConnectingThread != null) {
+                            mConnectingThread.closeSocket();
+                        }
+                    }
+                    btAdapter.disable();
+                    SystemClock.sleep(2000);
+
+
                 }
 
             });
         }
+
+
 
         private String getDateTime() {
             // get date time in custom format
@@ -272,6 +249,19 @@ public class BluetoothHelper extends Service {
                 stopSelf();
             }
         }
+    }
+
+    public void getBondedDevices(){
+        Set<BluetoothDevice> all_devices = btAdapter.getBondedDevices();
+        if (all_devices.size() > 0) {
+            for (BluetoothDevice currentDevice : all_devices) {
+                Log.d("Device Name ", currentDevice.getName());
+            }
+        }
+    }
+
+    public void writeToSerial(String s){
+        mConnectedThread.write(s);
     }
 
     // New Class for Connecting Thread
