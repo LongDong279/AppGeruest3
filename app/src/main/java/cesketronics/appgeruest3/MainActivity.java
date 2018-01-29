@@ -15,14 +15,19 @@ import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.renderscript.ScriptGroup;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
@@ -44,18 +49,12 @@ public class MainActivity extends Activity {
 
     Button function1btn, function2btn, function3btn;
     TextView voltageView, currentView, energyView, maxEnergyView;
-    Handler bluetoothIn;
+
     WaveLoadingView mWaveLoadingView;
     static ArrayList<btData> btDataList;
+    BluetoothHelper btHelperService;
+    boolean mIsBound = false;
 
-
-
-    final int handlerState = 0;                        //used to identify handler message
-    private BluetoothAdapter btAdapter = null;
-    private BluetoothSocket btSocket = null;
-    private OutputStream outStream = null;
-    private StringBuilder recDataString = new StringBuilder();
-    String voltage, current, energy;
 
 
     static int maxEnergy = 0;
@@ -63,31 +62,8 @@ public class MainActivity extends Activity {
     int nPercent=0;
     int percentage = 0;
 
-    static boolean dataReceived = false;
     static boolean UISetFirstTime = true;
     static boolean percentageDifference = false;
-
-    Thread backgroundThread;
-    volatile boolean stopWorker, stopBackground;
-
-
-
-
-    private ConnectedThread mConnectedThread;
-
-    // SPP UUID service
-    private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-    // MAC-address of Bluetooth module (you must edit this line)
-    // HC-06: 98:D3:31:FC:3A:25
-    private static String address = "98:D3:31:FC:3A:25";
-
-    /** Called when the activity is first created. */
-
-
-
-
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,13 +81,7 @@ public class MainActivity extends Activity {
         maxEnergyView = (TextView) findViewById(R.id.maxEnergy_tv);
 
         btDataList = new ArrayList<>();
-
         btDataList = getArrayList("btDataList");
-
-
-
-
-
 
 
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
@@ -151,13 +121,9 @@ public class MainActivity extends Activity {
             maxEnergyView.setText(mString);
         }
 
-
-
-        // Date currentTime = Calendar.getInstance().getTime();
-
         function1btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mConnectedThread.write("0"); // k
+                //mConnectedThread.write("0"); // k
                 Toast.makeText(getBaseContext(), "Set Energy", Toast.LENGTH_SHORT).show();
                 String s = maxEnergyView.getText().toString();
                 maxEnergy = Integer.parseInt(s);
@@ -169,7 +135,7 @@ public class MainActivity extends Activity {
 
         function2btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                mConnectedThread.write("1"); // r
+                //mConnectedThread.write("1"); // r
                 Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
                 String s = "0";
                 SharedPreferences.Editor mEditor = mPrefsMaxCap.edit();
@@ -229,10 +195,14 @@ public class MainActivity extends Activity {
         notificationManager.notify(0, notification);
     }
 
+    /*
+
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         return  device.createRfcommSocketToServiceRecord(MY_UUID);
         //creates secure outgoing connecetion with BT device using UUID
     }
+
+    */
 
     private int getPercentage(float E){
         float eNow = E;
@@ -244,6 +214,10 @@ public class MainActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
+
+        //Intent intent = new Intent(this, BluetoothHelper.class);
+        //bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
@@ -259,104 +233,40 @@ public class MainActivity extends Activity {
         super.onResume();
         Log.d(TAG, "...In onResume()...");
         // stopWorker = false;
+        /*
         new Thread (new Runnable() {
             public void run() {
                 // a potentially  time consuming task
                 Log.d(TAG, "in Thread");
-                openBT();
+                // openBT();
             }
         }).start();
+        */
+
+        doBindService();
 
 
+       // updateUi();
+       // updateDataList();
+    }
 
-        bluetoothIn = new Handler() {
-            public void handleMessage(Message msg) {
-                if (msg.what == handlerState) {                                     //if message is what we want
-                    String readMessage = (String) msg.obj;                             // msg.arg1 = bytes from connect thread
-                    recDataString.append(readMessage);                                //keep appending to string until ~
-                    int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                    if (endOfLineIndex > 0) {                                           // make sure there data before ~
-                        String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
-
-                        if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
-                        {
-                            dataInPrint = dataInPrint.substring(1);                     //erase the first character
-                            String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
-                            String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
-
-                            for (int i = 0; i < recSensorDataArray.length; i++) {
-                                sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
-                            }
-
-                            voltage = sensorArray[0];
-                            current = sensorArray[1];
-                            energy = sensorArray[2];
-
-                            /*
-
-                            voltageView.setText("Spannung = " + sensorArray[0] + "V");    //update the textviews with sensor values
-                            currentView.setText("Strom = " + sensorArray[1] + "A");
-                            energyView.setText("Energie = " + sensorArray[2] + "Wh");
-                            Float E = Float.parseFloat(sensorArray[2]);
-                            if (maxEnergy == 0) {
-                                mWaveLoadingView.setCenterTitle("Enter E first");
-                            } else {
-                                int percentage = getPercentage(E);
-                                comparePercentage(percentage);
-                                if(UISetFirstTime == true){
-                                    if (percentage <= 25) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
-                                    } else if (percentage <= 50) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 140, 0));
-                                    } else if (percentage <= 75) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 255, 0));
-                                    } else if (percentage <= 100) {
-                                        mWaveLoadingView.setWaveColor(Color.argb(255, 50, 205, 50));
-                                    }
-                                    mWaveLoadingView.setCenterTitle(String.valueOf(percentage) + " %");
-                                    mWaveLoadingView.setProgressValue(percentage);
-                                    UISetFirstTime = false;
-                                } else{
-                                    if(percentageDifference == true){
-                                        if (percentage <= 25) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
-                                        } else if (percentage <= 50) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 255, 140, 0));
-                                        } else if (percentage <= 75) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 255, 255, 0));
-                                        } else if (percentage <= 100) {
-                                            mWaveLoadingView.setWaveColor(Color.argb(255, 50, 205, 50));
-                                        }
-                                        mWaveLoadingView.setCenterTitle(String.valueOf(percentage) + " %");
-                                        mWaveLoadingView.setProgressValue(percentage);
-                                    }
-                                }
-                                btDataList.add(new btData(sensorArray[0],sensorArray[1],sensorArray[2],String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
-                            }
-                            */
-                        }
-                        recDataString.delete(0, recDataString.length());                    //clear all string data
-                    }
-                }
-            }
-        };
-
-        updateUi();
-        updateDataList();
-
-
+    @Override
+    public void onStop(){
+        super.onStop();
+        unbindService(mConnection);
+        mIsBound = false;
     }
 
     private void updateDataList() {
-        btDataList.add(new btData(voltage,current,energy,String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
+        btDataList.add(new btData(btHelperService.getVoltage(),btHelperService.getCurrent(),btHelperService.getEnergy(),String.valueOf(maxEnergy),String.valueOf(percentage),Calendar.getInstance().getTimeInMillis()));
     }
 
     private void updateUi() {
-        voltageView.setText("Spannung = " + voltage + "V");    //update the textviews with sensor values
-        currentView.setText("Strom = " + current + "A");
-        energyView.setText("Energie = " + energy+ "Wh");
+        voltageView.setText("Spannung = " + btHelperService.getVoltage() + "V");    //update the textviews with sensor values
+        currentView.setText("Strom = " + btHelperService.getCurrent() + "A");
+        energyView.setText("Energie = " + btHelperService.getEnergy()+ "Wh");
 
-        Float E = Float.parseFloat(energy);
+        Float E = Float.parseFloat(btHelperService.getEnergy());
         if (maxEnergy == 0) {
             mWaveLoadingView.setCenterTitle("Enter E first");
         } else {
@@ -393,6 +303,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    /*
     @Override
     public void onStop() {
         super.onStop();
@@ -405,11 +316,13 @@ public class MainActivity extends Activity {
                 errorExit("Fatal Error", "In onStop() and failed to flush output stream: " + e.getMessage() + ".");
             }
         }
-        closeBT();
+        //closeBT();
         //receiveDataInBackground();
 
     }
+    */
 
+    /*
     private void closeBT() {
         try     {
             btSocket.close();
@@ -418,7 +331,9 @@ public class MainActivity extends Activity {
             errorExit("Fatal Error", "In closeBT() and failed to close socket." + e2.getMessage() + ".");
         }
     }
+    */
 
+    /*
     private void receiveDataInBackground() {
         Log.d(TAG, "receive Data in Background");
         // NEW SHIT
@@ -470,6 +385,8 @@ public class MainActivity extends Activity {
         });
     }
 
+    */
+    /*
     private void openBT(){
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
@@ -516,6 +433,7 @@ public class MainActivity extends Activity {
         mConnectedThread = new ConnectedThread(btSocket);
         mConnectedThread.start();
     }
+    */
 
     @Override
     public void onRestart() {
@@ -523,6 +441,8 @@ public class MainActivity extends Activity {
         Log.d(TAG, "...In onRestart()...");
         // closeBT();
     }
+
+    /*
 
     private void checkBTState() {
         // Check for Bluetooth support and then check to make sure it is turned on
@@ -541,12 +461,14 @@ public class MainActivity extends Activity {
             }
         }
     }
+    */
 
     private void errorExit(String title, String message){
         Toast.makeText(getBaseContext(), title + " - " + message, Toast.LENGTH_LONG).show();
         finish();
     }
 
+    /*
     private void sendData(String message) {
         byte[] msgBuffer = message.getBytes();
 
@@ -563,8 +485,10 @@ public class MainActivity extends Activity {
             errorExit("Fatal Error", msg);
         }
     }
+    */
 
-    //create new class for connect thread
+    // create new class for connect thread
+    /*
     private class ConnectedThread extends Thread {
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
@@ -616,6 +540,7 @@ public class MainActivity extends Activity {
 
 
     }
+    */
 
     @Override
     public void onDestroy(){
@@ -660,6 +585,39 @@ public class MainActivity extends Activity {
         return gson.fromJson(json, type);
     }
 
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            btHelperService = ((BluetoothHelper.btBinder)service).getService();
+            Toast.makeText(getBaseContext(), "Service connected", Toast.LENGTH_SHORT).show();
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            btHelperService = null;
+        }
+
+
+    };
+
+    void doBindService() {
+        bindService(new Intent(MainActivity.this, BluetoothHelper.class), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+
+    void doUnBindService(){
+        if(mIsBound){
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
+
 
 }
+
+
 
