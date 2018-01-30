@@ -83,13 +83,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Stats"
-                android:layout_marginLeft="40dp"/>
+                android:layout_marginLeft="1dp"/>
             <Button
                 android:id="@+id/function2btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset_cap_btn2_txt"
-                android:layout_marginLeft="40dp"/>
+                android:layout_marginLeft="1dp"/>
+            <Button
+                android:id="@+id/resetMacBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rst MAC"
+                />
         </LinearLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

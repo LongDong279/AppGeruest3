@@ -48,13 +48,15 @@ import com.google.gson.reflect.TypeToken;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth1";
 
-    Button function1btn, function2btn, function3btn;
+    Button function1btn, function2btn, function3btn, resetMacBtn;
     TextView voltageView, currentView, energyView, maxEnergyView;
 
     WaveLoadingView mWaveLoadingView;
     static ArrayList<btData> btDataList;
     BluetoothHelper btHelperService;
     boolean mIsBound = false;
+
+    String macAddress ="";
 
     Thread threadUpdateUi;
     boolean stopthreadUpdateUi = false;
@@ -81,6 +83,7 @@ public class MainActivity extends Activity {
         energyView = (TextView) findViewById(R.id.energy_tv);
         maxEnergyView = (TextView) findViewById(R.id.maxEnergy_tv);
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
+        resetMacBtn = (Button) findViewById(R.id.resetMacBtn);
 
         btDataList = new ArrayList<>();
         btDataList = getArrayList("btDataList");
@@ -113,6 +116,23 @@ public class MainActivity extends Activity {
         if (maxEnergy != 0){
             maxEnergyView.setText(mString);
         }
+
+        final SharedPreferences mPrefsMacAdd = getSharedPreferences("Mac", 0);
+        String macString = mPrefsMacAdd.getString("MacAdd", "");
+        macAddress = macString;
+
+        if(macAddress.isEmpty()){
+            Log.d(TAG, "MAC is empty");
+            Intent intent = new Intent(MainActivity.this, selectBtDeviceActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+
+        }
+
+
+
+
 
         function1btn.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -147,6 +167,26 @@ public class MainActivity extends Activity {
                 startActivity(intent);
             }
         });
+
+        resetMacBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(MainActivity.this )
+                        .setMessage("Are you sure you want to reset MAC-address?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String s = "";
+                                SharedPreferences.Editor mEditor = mPrefsMacAdd.edit();
+                                mEditor.putString("MacAdd", s).commit();
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            }
+        });
+
+
     }
 
     private void comparePercentage(int i) {

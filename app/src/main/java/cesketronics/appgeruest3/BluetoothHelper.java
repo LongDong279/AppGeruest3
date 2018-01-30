@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.camera2.params.BlackLevelPattern;
 import android.os.Binder;
 import android.os.Handler;
@@ -56,7 +57,11 @@ public class BluetoothHelper extends Service {
     // SPP UUID service - this should work for most devices
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     // String for MAC address
-    private static final String MAC_ADDRESS = "98:D3:31:FC:3A:25"; //your MAC Address here, should be changed to select different devices
+    //private static final String MAC_ADDRESS = "98:D3:31:FC:3A:25"; //your MAC Address here, should be changed to select different devices
+    private String MAC_ADDRESS = "0";
+
+
+
 
     private StringBuilder recDataString = new StringBuilder();
 
@@ -90,6 +95,10 @@ public class BluetoothHelper extends Service {
         super.onCreate();
 
         stopThread = false;
+
+        final SharedPreferences mPrefsMacAdd = getSharedPreferences("Mac", 0);
+        String macString = mPrefsMacAdd.getString("MacAdd", "");
+        MAC_ADDRESS = macString;
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
@@ -137,114 +146,10 @@ public class BluetoothHelper extends Service {
         Toast.makeText(getApplicationContext(),"Backgroundservice created",
                 Toast.LENGTH_SHORT).show();
 
-
-
-
-
         Log.d("BT SERVICE", "SERVICE CREATED");
 
-
-
-        /*
-        if(mTimer != null) {
-            mTimer.cancel();
-        } else {
-            // recreate new
-            mTimer = new Timer();
-        }
-        // schedule task
-        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-        */
-
     }
 
-    class TimeDisplayTimerTask extends TimerTask {
-
-        @Override
-        public void run() {
-            // run on another thread
-            mHandler.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    // display toast
-
-
-                    btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
-                    //btAdapter.enable();
-                    //SystemClock.sleep(2000);
-                    checkBTState();
-
-                    bluetoothIn = new Handler() {
-
-                        public void handleMessage(android.os.Message msg) {
-                            Log.d("DEBUG", "handleMessage");
-                            if (msg.what == handlerState) {                                     //if message is what we want
-                                String readMessage = (String) msg.obj;                                                                // msg.arg1 = bytes from connect thread
-                                recDataString.append(readMessage); //enter code here
-                                Log.d("RECORDED", recDataString.toString());
-                                // Do stuff here with your data, like adding it to the database
-                                int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
-                                if (endOfLineIndex > 0) {                                           // make sure there data before ~
-                                    String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
-                                    Log.d("String:", dataInPrint);
-
-                                    if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
-                                    {
-                                        dataInPrint = dataInPrint.substring(1);                     //erase the first character
-                                        String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
-                                        String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
-
-                                        for (int i = 0; i < recSensorDataArray.length; i++) {
-                                            sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
-                                        }
-
-                                        voltage = sensorArray[0];
-                                        current = sensorArray[1];
-                                        energy = sensorArray[2];
-
-                                        dataReceived = true;
-                                    }
-                                }
-                            }
-                            if(dataReceived){
-                                recDataString.delete(0, recDataString.length());
-                                //dataReceived = false;
-                            }                   //clear all string data
-                        }
-                    };
-
-                    Toast.makeText(getApplicationContext(), voltage +" "+ current+" "+ energy+" ",
-                            Toast.LENGTH_SHORT).show();
-
-                    if (dataReceived){
-                        bluetoothIn.removeCallbacksAndMessages(null);
-                        stopThread = true;
-                        if (mConnectedThread != null) {
-                            mConnectedThread.closeStreams();
-                        }
-                        if (mConnectingThread != null) {
-                            mConnectingThread.closeSocket();
-                        }
-                        dataReceived = false;
-                        //stopThread = false;
-                    }
-                    //btAdapter.disable();
-                   // SystemClock.sleep(2000);
-                }
-
-            });
-        }
-
-
-
-        private String getDateTime() {
-            // get date time in custom format
-            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy/MM/dd - HH:mm:ss]");
-            return sdf.format(new Date());
-        }
-
-    }
 
 
     @Override
@@ -274,6 +179,7 @@ public class BluetoothHelper extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+
         bluetoothIn.removeCallbacksAndMessages(null);
         stopThread = true;
         if (mConnectedThread != null) {
@@ -282,6 +188,7 @@ public class BluetoothHelper extends Service {
         if (mConnectingThread != null) {
             mConnectingThread.closeSocket();
         }
+
 
         Log.d("SERVICE", "onDestroy");
     }
