@@ -60,18 +60,22 @@ implements Preference.OnPreferenceChangeListener {
         resetArduinoEnergyBtn.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
-                SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "1");
-                editor.commit();
+                new AlertDialog.Builder(SettingsActivity.this )
+                        .setMessage("Are you sure you want to reset all data?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this);
+                                SharedPreferences.Editor editor = sharedPrefs.edit();
+                                editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "1");
+                                editor.commit();
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
                 return true;
             }
         });
-
-
-
-
-
     }
 
     @Override
