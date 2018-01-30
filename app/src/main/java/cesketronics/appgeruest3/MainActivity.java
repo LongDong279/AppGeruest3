@@ -24,6 +24,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -55,12 +56,15 @@ public class MainActivity extends Activity {
     BluetoothHelper btHelperService;
     boolean mIsBound = false;
 
+    Thread threadUpdateUi;
+    boolean stopthreadUpdateUi = false;
+
     static int maxEnergy = 0;
     int oPercent=0;
     int nPercent=0;
     int percentage = 0;
 
-    static boolean UISetFirstTime = true;
+    boolean UISetFirstTime = true;
     static boolean percentageDifference = false;
 
     @Override
@@ -80,6 +84,10 @@ public class MainActivity extends Activity {
 
         btDataList = new ArrayList<>();
         btDataList = getArrayList("btDataList");
+
+        if (btDataList == null){
+            btDataList = new ArrayList<>();
+        }
 
         mWaveLoadingView.setShapeType(WaveLoadingView.ShapeType.CIRCLE);
         mWaveLoadingView.setCenterTitleColor(Color.DKGRAY);
@@ -115,6 +123,7 @@ public class MainActivity extends Activity {
                 maxEnergy = Integer.parseInt(s);
                 Editor mEditor = mPrefsMaxCap.edit();
                 mEditor.putString("MaxCap", s).commit();
+                UISetFirstTime = true;
             }
         });
 
@@ -126,6 +135,7 @@ public class MainActivity extends Activity {
                 String s = "0";
                 SharedPreferences.Editor mEditor = mPrefsMaxCap.edit();
                 mEditor.putString("MaxCap", s).commit();
+                maxEnergy = 0;
                 maxEnergyView.setText("Enter max. E in");
             }
         });
@@ -204,13 +214,35 @@ public class MainActivity extends Activity {
         Log.d(TAG, "...In onResume()...");
         doBindService();
 
-        /*
 
-        if((btHelperService.getVoltage() != null) && (btHelperService.getCurrent()!= null) && (btHelperService.getEnergy() != null)){
-            updateUi();
-            updateDataList();
-        }
-        */
+        threadUpdateUi = new Thread(new Runnable() {
+            public void run() {
+                while (!Thread.currentThread().isInterrupted() && !stopthreadUpdateUi) {
+                    try {
+                        if (btHelperService != null) {
+                            if (btHelperService.dataReceived) {
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        updateUi();
+                                        updateDataList();
+                                    }
+                                });
+
+                            }
+                        }
+                    } catch (Exception ex) {
+                        stopthreadUpdateUi = true;
+                    }
+                }
+            }
+        });
+        threadUpdateUi.start();
+
+
+
+
+
     }
 
     @Override
@@ -286,7 +318,7 @@ public class MainActivity extends Activity {
         saveArrayList(btDataList, "btDataList");
         // btAdapter.disable();
         Log.d(TAG, "finishing APP");
-        // stopBackground = true;
+        stopthreadUpdateUi = true;
         finish();
     }
 

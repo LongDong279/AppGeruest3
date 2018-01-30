@@ -44,7 +44,9 @@ public class BluetoothHelper extends Service {
 
     private final IBinder mBinder = new btBinder();
 
-    private boolean dataReceived = false;
+    public boolean dataReceived = false;
+
+
 
 
     private ConnectingThread mConnectingThread;
@@ -74,9 +76,11 @@ public class BluetoothHelper extends Service {
         return energy;
     }
 
+
     public class btBinder extends Binder {
         BluetoothHelper getService() {
             // Return this instance of LocalService so clients can call public methods
+            Log.d("Service", "Service successfully binded ");
             return BluetoothHelper.this;
         }
     }
@@ -84,6 +88,12 @@ public class BluetoothHelper extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        stopThread = false;
+
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        checkBTState();
+
         bluetoothIn = new Handler() {
 
             public void handleMessage(android.os.Message msg) {
@@ -97,9 +107,11 @@ public class BluetoothHelper extends Service {
                     if (endOfLineIndex > 0) {                                           // make sure there data before ~
                         String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
 
+
                         if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
                         {
                             dataInPrint = dataInPrint.substring(1);                     //erase the first character
+                            Log.d("String:", dataInPrint);
                             String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
                             String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
 
@@ -110,18 +122,30 @@ public class BluetoothHelper extends Service {
                             voltage = sensorArray[0];
                             current = sensorArray[1];
                             energy = sensorArray[2];
+
+                            dataReceived = true;
                         }
                     }
                 }
-                recDataString.delete(0, recDataString.length());                    //clear all string data
+                if(dataReceived){
+                    recDataString.delete(0, recDataString.length());
+                    dataReceived = false;
+                }                   //clear all string data
             }
         };
 
+        Toast.makeText(getApplicationContext(),"Backgroundservice created",
+                Toast.LENGTH_SHORT).show();
+
+
+
+
+
         Log.d("BT SERVICE", "SERVICE CREATED");
-        stopThread = false;
 
 
 
+        /*
         if(mTimer != null) {
             mTimer.cancel();
         } else {
@@ -130,6 +154,8 @@ public class BluetoothHelper extends Service {
         }
         // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
+        */
+
     }
 
     class TimeDisplayTimerTask extends TimerTask {
@@ -142,12 +168,55 @@ public class BluetoothHelper extends Service {
                 @Override
                 public void run() {
                     // display toast
+
+
                     btAdapter = BluetoothAdapter.getDefaultAdapter();       // get Bluetooth adapter
-                    btAdapter.enable();
-                    SystemClock.sleep(2000);
+                    //btAdapter.enable();
+                    //SystemClock.sleep(2000);
                     checkBTState();
-                    Toast.makeText(getApplicationContext(), getDateTime() +" "+ NOTIFY_INTERVAL,
+
+                    bluetoothIn = new Handler() {
+
+                        public void handleMessage(android.os.Message msg) {
+                            Log.d("DEBUG", "handleMessage");
+                            if (msg.what == handlerState) {                                     //if message is what we want
+                                String readMessage = (String) msg.obj;                                                                // msg.arg1 = bytes from connect thread
+                                recDataString.append(readMessage); //enter code here
+                                Log.d("RECORDED", recDataString.toString());
+                                // Do stuff here with your data, like adding it to the database
+                                int endOfLineIndex = recDataString.indexOf("~");                    // determine the end-of-line
+                                if (endOfLineIndex > 0) {                                           // make sure there data before ~
+                                    String dataInPrint = recDataString.substring(0, endOfLineIndex);    // extract string
+                                    Log.d("String:", dataInPrint);
+
+                                    if (recDataString.charAt(0) == '#')                             //if it starts with # we know it is what we are looking for
+                                    {
+                                        dataInPrint = dataInPrint.substring(1);                     //erase the first character
+                                        String[] recSensorDataArray = dataInPrint.split(";");       //make an array out of the input string
+                                        String[] sensorArray = new String[recSensorDataArray.length];   //second sensor data array
+
+                                        for (int i = 0; i < recSensorDataArray.length; i++) {
+                                            sensorArray[i] = recSensorDataArray[i]; //give the string array into another string array, to simplify the name
+                                        }
+
+                                        voltage = sensorArray[0];
+                                        current = sensorArray[1];
+                                        energy = sensorArray[2];
+
+                                        dataReceived = true;
+                                    }
+                                }
+                            }
+                            if(dataReceived){
+                                recDataString.delete(0, recDataString.length());
+                                //dataReceived = false;
+                            }                   //clear all string data
+                        }
+                    };
+
+                    Toast.makeText(getApplicationContext(), voltage +" "+ current+" "+ energy+" ",
                             Toast.LENGTH_SHORT).show();
+
                     if (dataReceived){
                         bluetoothIn.removeCallbacksAndMessages(null);
                         stopThread = true;
@@ -157,11 +226,11 @@ public class BluetoothHelper extends Service {
                         if (mConnectingThread != null) {
                             mConnectingThread.closeSocket();
                         }
+                        dataReceived = false;
+                        //stopThread = false;
                     }
-                    btAdapter.disable();
-                    SystemClock.sleep(2000);
-
-
+                    //btAdapter.disable();
+                   // SystemClock.sleep(2000);
                 }
 
             });
