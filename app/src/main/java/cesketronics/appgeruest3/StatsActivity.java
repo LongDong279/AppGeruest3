@@ -219,7 +219,7 @@ public class StatsActivity extends Activity {
                     graph.getViewport().setXAxisBoundsManual(true);
 
                     graph.getViewport().setMinX(btDataStatsList.get(0).btTime);
-                    graph.getViewport().setMaxX(btDataStatsList.get(btDataStatsList.size()/2).btTime);
+                    graph.getViewport().setMaxX(btDataStatsList.get(btDataStatsList.size()-1).btTime);
 
                     dataAlreadyLoaded = true;
                 }else{

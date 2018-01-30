@@ -421,6 +421,7 @@ public class BluetoothHelper extends Service {
             } catch (IOException e) {
                 Log.d("DEBUG BT", e.toString());
                 Log.d("BT SERVICE", "UNABLE TO READ/WRITE, STOPPING SERVICE");
+                Toast.makeText(getBaseContext(), "BT connection lost - stopping service", Toast.LENGTH_LONG).show();
                 stopSelf();
             }
 
