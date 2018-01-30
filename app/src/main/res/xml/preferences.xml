@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen  xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Accumulator settings"
+        android:key="Accumulator_category">
+
+        <EditTextPreference
+            android:key="@string/preference_accumulator_energy_key"
+            android:title="@string/preference_accumulator_energy_title"
+            android:summary="Set maximum accumulator energy"
+            android:dialogTitle="Maximum accumulator energy"
+            android:dialogMessage="Set maximum accumulator energy"
+            android:defaultValue="@string/preference_accumulator_energy_default"
+            android:inputType="number"/>
+
+        <Preference android:title="Reset Recorded Energy"
+            android:key="@string/preference_resetArduinoEnergy_key"
+            android:summary="Reset the used energy on Arduino"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Statistics settings"
+        android:key="Statistics_category">
+
+
+        <Preference android:title="Reset Recorded Data"
+            android:key="@string/preference_resetRecordedData_key"
+            android:summary="Reset the recorded accumulator statistics"/>
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="Connection settings"
+        android:key="Connection_category">
+
+
+        <Preference android:title="Choose Bluetooth Device"
+            android:key="@string/preference_resetMacAddress_key"
+            android:summary="Select preferred Bluetooth Device"/>
+
+
+    </PreferenceCategory>
+</PreferenceScreen>

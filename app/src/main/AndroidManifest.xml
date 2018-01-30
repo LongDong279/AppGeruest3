@@ -26,9 +26,15 @@
         <activity
             android:name=".StatsActivity"
             android:label="@string/app_name"
-            android:screenOrientation="landscape" />
-        <activity android:name=".selectBtDeviceActivity" />
-        <activity android:name=".SettingsActivity"></activity>
+            android:screenOrientation="landscape"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".selectBtDeviceActivity"
+            android:label="Select BT-Device"
+            android:parentActivityName=".SettingsActivity"/>
+        <activity android:name=".SettingsActivity"
+            android:label="Settings"
+            android:parentActivityName=".MainActivity">
+        </activity>
     </application>
 
 </manifest>

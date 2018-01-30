@@ -42,7 +42,7 @@ import java.util.Locale;
 
 
 public class StatsActivity extends Activity {
-    Button backButton, loadStatsButton, voltageEnableBtn, currentEnableBtn, energyEnableBtn, resetDataBtn ;
+    Button loadStatsButton, voltageEnableBtn, currentEnableBtn, energyEnableBtn ;
     private static final String TAG = "bluetooth1";
     ArrayList<btData> btDataStatsList;
     GraphView graph;
@@ -61,9 +61,7 @@ public class StatsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
-        backButton = (Button) findViewById(R.id.backBtn);
         loadStatsButton = (Button) findViewById(R.id.loadDataBtn);
-        resetDataBtn = (Button) findViewById(R.id.resetDataBtn);
         energyEnableBtn =(Button)findViewById(R.id.enableEnergyBtn);
         currentEnableBtn =(Button)findViewById(R.id.enableCurrentBtn);
         voltageEnableBtn =(Button)findViewById(R.id.enableVoltageBtn);
@@ -113,45 +111,12 @@ public class StatsActivity extends Activity {
             }
         });
 
-        backButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                Intent intent = new Intent(StatsActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-
-
-            }
-        });
-
-        resetDataBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(StatsActivity.this )
-                        .setMessage("Are you sure you want to reset all data?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(StatsActivity.this);
-                                preferences.edit().remove("btDataList").commit();
-                                if(btDataStatsList != null){
-                                    btDataStatsList.clear();
-                                    MainActivity.btDataList.clear();
-                                    graph.removeAllSeries();
-                                }
-                            }
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
-            }
-        });
-
         loadStatsButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 btDataStatsList = getArrayList("btDataList");
                 Log.d(TAG, "Data loaded");
 
-                if(btDataStatsList != null){
+                if((btDataStatsList != null) && (btDataStatsList.size()>0)){
                     DataPoint[] valuesVoltage = new DataPoint[btDataStatsList.size()];
                     DataPoint[] valuesCurrent = new DataPoint[btDataStatsList.size()];
                     DataPoint[] valuesEnergy = new DataPoint[btDataStatsList.size()];
@@ -226,9 +191,6 @@ public class StatsActivity extends Activity {
                     Toast.makeText(getBaseContext(), "no data to display", Toast.LENGTH_LONG).show();
                 }
 
-
-
-
             }
         });
 
@@ -242,19 +204,5 @@ public class StatsActivity extends Activity {
         Type type = new TypeToken<ArrayList<btData>>() {}.getType();
         return gson.fromJson(json, type);
     }
-
-    @Override
-    public void onBackPressed()
-    {
-        super.onBackPressed();
-        Intent intent = new Intent(StatsActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        /*
-        startActivity(new Intent(StatsActivity.this, MainActivity.class));
-        finish();
-        */
-    }
-
 
 }

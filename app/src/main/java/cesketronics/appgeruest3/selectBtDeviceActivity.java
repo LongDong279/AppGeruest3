@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -50,12 +51,14 @@ public class selectBtDeviceActivity extends Activity {
             public void onItemClick(AdapterView<?> adapter, View view, int pos, long id){
                 String devicep=listView.getAdapter().getItem(pos).toString();
                 String address = devicep.substring(devicep.length() - 17);
+
                 final SharedPreferences mPrefsMacAdd = getSharedPreferences("Mac", 0);
                 SharedPreferences.Editor mEditor = mPrefsMacAdd.edit();
                 mEditor.putString("MacAdd", address).commit();
-                Intent intent = new Intent(selectBtDeviceActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+
+                Toast.makeText(getBaseContext(), "Device successfully changed", Toast.LENGTH_LONG).show();
+
+
             }
         });
 

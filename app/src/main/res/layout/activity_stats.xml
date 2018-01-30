@@ -24,13 +24,6 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Back"
-                android:id="@+id/backBtn"
-                android:layout_weight="1"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="V"
                 android:id="@+id/enableVoltageBtn"
                 android:layout_weight="1"/>
@@ -54,13 +47,6 @@
                 android:layout_height="wrap_content"
                 android:text="Load Data"
                 android:id="@+id/loadDataBtn"
-                android:layout_weight="1"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reset Data"
-                android:id="@+id/resetDataBtn"
                 android:layout_weight="1"/>
 
         </LinearLayout>

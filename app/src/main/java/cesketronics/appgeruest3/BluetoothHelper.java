@@ -13,6 +13,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -40,8 +41,6 @@ public class BluetoothHelper extends Service {
     public static final long NOTIFY_INTERVAL = 10000;
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
-    // timer handling
-    private Timer mTimer = null;
 
     private final IBinder mBinder = new btBinder();
 
@@ -96,12 +95,34 @@ public class BluetoothHelper extends Service {
 
         stopThread = false;
 
+
+
         final SharedPreferences mPrefsMacAdd = getSharedPreferences("Mac", 0);
         String macString = mPrefsMacAdd.getString("MacAdd", "");
         MAC_ADDRESS = macString;
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String resetArduinosEnergy = sharedPrefs.getString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+
+        if((resetArduinosEnergy.equals("1")) && mConnectedThread != null){
+            resetArduinosEnergy ="0";
+            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+            editor.commit();
+            writeToSerial("1");
+            Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
+        } else if (((resetArduinosEnergy.equals("1")) && mConnectedThread == null)) {
+            resetArduinosEnergy ="0";
+            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+            editor.commit();
+            Toast.makeText(getBaseContext(), "To reset arduinos energy, connect first", Toast.LENGTH_LONG).show();
+        }
 
         bluetoothIn = new Handler() {
 

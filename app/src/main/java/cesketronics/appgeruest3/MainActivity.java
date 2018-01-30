@@ -31,6 +31,9 @@ import android.preference.PreferenceManager;
 import android.renderscript.ScriptGroup;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -48,15 +51,13 @@ import com.google.gson.reflect.TypeToken;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth1";
 
-    Button function1btn, function2btn, function3btn, resetMacBtn;
-    TextView voltageView, currentView, energyView, maxEnergyView;
+    TextView voltageView, currentView, energyView;
 
     WaveLoadingView mWaveLoadingView;
     static ArrayList<btData> btDataList;
     BluetoothHelper btHelperService;
     boolean mIsBound = false;
-
-    String macAddress ="";
+    String resetArduinosEnergy = "0";
 
     Thread threadUpdateUi;
     boolean stopthreadUpdateUi = false;
@@ -72,18 +73,16 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
+
+
         // declare all visual xml objects as java objects
-        function1btn = (Button) findViewById(R.id.function1btn);
-        function2btn = (Button) findViewById(R.id.function2btn);
-        function3btn = (Button) findViewById(R.id.function3btn);
         voltageView = (TextView) findViewById(R.id.voltage_tv);
         currentView = (TextView) findViewById(R.id.current_tv);
         energyView = (TextView) findViewById(R.id.energy_tv);
-        maxEnergyView = (TextView) findViewById(R.id.maxEnergy_tv);
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
-        resetMacBtn = (Button) findViewById(R.id.resetMacBtn);
 
         btDataList = new ArrayList<>();
         btDataList = getArrayList("btDataList");
@@ -109,84 +108,38 @@ public class MainActivity extends Activity {
         mWaveLoadingView.startAnimation();
 
 
-        final SharedPreferences mPrefsMaxCap = getSharedPreferences("label", 0);
-        String mString = mPrefsMaxCap.getString("MaxCap", "0");
-        maxEnergy = Integer.parseInt(mString);
+        // read the saved maximum energy for accumulator
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorEnergyKey = getString(R.string.preference_accumulator_energy_key);
+        String prefAccumulatorEnergyDefault = getString(R.string.preference_accumulator_energy_default);
+        String AccumulatorEnergy = sPrefs.getString(prefAccumulatorEnergyKey,prefAccumulatorEnergyDefault);
+        maxEnergy = Integer.parseInt(AccumulatorEnergy);
 
-        if (maxEnergy != 0){
-            maxEnergyView.setText(mString);
+        //check if reset Arduinos Energy in BT Helper
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_mainactivity, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Wir prüfen, ob Menü-Element mit der ID "action_daten_aktualisieren"
+        // ausgewählt wurde und geben eine Meldung aus
+        int id = item.getItemId();
+        if (id == R.id.showStats) {
+            startActivity(new Intent(this, StatsActivity.class));
+            return true;
         }
-
-        final SharedPreferences mPrefsMacAdd = getSharedPreferences("Mac", 0);
-        String macString = mPrefsMacAdd.getString("MacAdd", "");
-        macAddress = macString;
-
-        if(macAddress.isEmpty()){
-            Log.d(TAG, "MAC is empty");
-            Intent intent = new Intent(MainActivity.this, selectBtDeviceActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-
+        if(id == R.id.showSettings){
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         }
-
-
-
-
-
-        function1btn.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                //mConnectedThread.write("0"); // k
-                btHelperService.writeToSerial("0");
-                Toast.makeText(getBaseContext(), "Set Energy", Toast.LENGTH_SHORT).show();
-                String s = maxEnergyView.getText().toString();
-                maxEnergy = Integer.parseInt(s);
-                Editor mEditor = mPrefsMaxCap.edit();
-                mEditor.putString("MaxCap", s).commit();
-                UISetFirstTime = true;
-            }
-        });
-
-        function2btn.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                //mConnectedThread.write("1"); // r
-                btHelperService.writeToSerial("1");
-                Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
-                String s = "0";
-                SharedPreferences.Editor mEditor = mPrefsMaxCap.edit();
-                mEditor.putString("MaxCap", s).commit();
-                maxEnergy = 0;
-                maxEnergyView.setText("Enter max. E in");
-            }
-        });
-
-        function3btn.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, StatsActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-            }
-        });
-
-        resetMacBtn.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this )
-                        .setMessage("Are you sure you want to reset MAC-address?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String s = "";
-                                SharedPreferences.Editor mEditor = mPrefsMacAdd.edit();
-                                mEditor.putString("MacAdd", s).commit();
-                            }
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
-            }
-        });
-
-
+        return super.onOptionsItemSelected(item);
     }
 
     private void comparePercentage(int i) {
@@ -253,6 +206,8 @@ public class MainActivity extends Activity {
         super.onResume();
         Log.d(TAG, "...In onResume()...");
         doBindService();
+
+
 
 
         threadUpdateUi = new Thread(new Runnable() {
@@ -359,6 +314,7 @@ public class MainActivity extends Activity {
         // btAdapter.disable();
         Log.d(TAG, "finishing APP");
         stopthreadUpdateUi = true;
+        doUnBindService();
         finish();
     }
 

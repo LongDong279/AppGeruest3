@@ -10,6 +10,15 @@
     <string name="set_cap_btn1_txt">Set E</string>
     <string name="reset_cap_btn2_txt">Reset E</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="action_Statistics">Statistics</string>
+    <string name="action_Settings">Settings</string>
+    <string name="preference_accumulator_energy_key">setAccuMaxEnergy</string>
+    <string name="preference_accumulator_energy_title">Maximum Accumulator Energy</string>
+    <string name="preference_accumulator_energy_default">0</string>
+    <string name="preference_resetArduinoEnergy_key">resetArduinoEnergy</string>
+    <string name="preference_resetRecordedData_key">resetRecordedData</string>
+    <string name="preference_resetMacAddress_key">resetMacAddress</string>
+
 
     <!-- Strings related to Settings -->
 

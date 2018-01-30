@@ -47,55 +47,5 @@
                 android:textSize="10sp" />
         </LinearLayout>
 
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:layout_gravity="center">
-            <EditText
-                android:id="@+id/maxEnergy_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/maxEnergy_text"
-                android:textSize="14sp"
-                android:inputType="number"
-                android:focusedByDefault="false" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Wh"
-                android:textSize="14sp"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center">
-            <Button
-                android:id="@+id/function1btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/set_cap_btn1_txt" />
-            <Button
-                android:id="@+id/function3btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Stats"
-                android:layout_marginLeft="1dp"/>
-            <Button
-                android:id="@+id/function2btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reset_cap_btn2_txt"
-                android:layout_marginLeft="1dp"/>
-            <Button
-                android:id="@+id/resetMacBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rst MAC"
-                />
-        </LinearLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
