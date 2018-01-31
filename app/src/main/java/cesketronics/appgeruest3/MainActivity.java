@@ -200,7 +200,11 @@ public class MainActivity extends Activity {
     public void onPause() {
         super.onPause();
         Log.d(TAG, "...In onPause()...");
-
+        unbindService(mConnection);
+        mIsBound = false;
+        saveArrayList(btDataList, "btDataList");
+        stopthreadUpdateUi = true;
+        doUnBindService();
 
     }
 
@@ -210,8 +214,15 @@ public class MainActivity extends Activity {
         Log.d(TAG, "...In onResume()...");
         doBindService();
 
-
-
+        /*
+        btDataList.add(new btData("12,5", "3,5","0,01","3500","99",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,5","0,02","3500","98",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,1","0,03","3500","97",Calendar.getInstance().getTimeInMillis()));
+        SystemClock.sleep(2000);
+        btDataList.add(new btData("12,5", "3,7","0,04","3500","96",Calendar.getInstance().getTimeInMillis()));
+*/
 
         threadUpdateUi = new Thread(new Runnable() {
             public void run() {
@@ -246,11 +257,13 @@ public class MainActivity extends Activity {
     @Override
     public void onStop(){
         super.onStop();
+        /*
         unbindService(mConnection);
         mIsBound = false;
         saveArrayList(btDataList, "btDataList");
         stopthreadUpdateUi = true;
         doUnBindService();
+        */
     }
 
     private void updateDataList() {

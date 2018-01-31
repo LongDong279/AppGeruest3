@@ -90,10 +90,6 @@ implements Preference.OnPreferenceChangeListener {
                 return true;
             }
         });
-
-        if(btDataStatsList.size() > 1){
-            resetArduinoEnergyBtn.setSummary((btDataStatsList.get(btDataStatsList.size()-1).btDataEnergy)+" Wh");
-        }
     }
 
     @Override
