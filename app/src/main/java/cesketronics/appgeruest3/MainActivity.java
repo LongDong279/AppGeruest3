@@ -51,7 +51,8 @@ import com.google.gson.reflect.TypeToken;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth1";
 
-    TextView voltageView, currentView, energyView;
+    TextView voltageView, currentView;
+    //energyView;
 
     WaveLoadingView mWaveLoadingView;
     static ArrayList<btData> btDataList;
@@ -81,7 +82,7 @@ public class MainActivity extends Activity {
         // declare all visual xml objects as java objects
         voltageView = (TextView) findViewById(R.id.voltage_tv);
         currentView = (TextView) findViewById(R.id.current_tv);
-        energyView = (TextView) findViewById(R.id.energy_tv);
+        //energyView = (TextView) findViewById(R.id.energy_tv);
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
 
         btDataList = new ArrayList<>();
@@ -199,6 +200,8 @@ public class MainActivity extends Activity {
     public void onPause() {
         super.onPause();
         Log.d(TAG, "...In onPause()...");
+
+
     }
 
     @Override
@@ -245,6 +248,9 @@ public class MainActivity extends Activity {
         super.onStop();
         unbindService(mConnection);
         mIsBound = false;
+        saveArrayList(btDataList, "btDataList");
+        stopthreadUpdateUi = true;
+        doUnBindService();
     }
 
     private void updateDataList() {
@@ -254,7 +260,7 @@ public class MainActivity extends Activity {
     private void updateUi() {
         voltageView.setText("Spannung = " + btHelperService.getVoltage() + "V");    //update the textviews with sensor values
         currentView.setText("Strom = " + btHelperService.getCurrent() + "A");
-        energyView.setText("Energie = " + btHelperService.getEnergy()+ "Wh");
+        //energyView.setText("Energie = " + btHelperService.getEnergy()+ "Wh");
 
         Float E = Float.parseFloat(btHelperService.getEnergy());
         if (maxEnergy == 0) {
@@ -305,18 +311,17 @@ public class MainActivity extends Activity {
         finish();
     }
 
+    /*
     @Override
     public void onDestroy(){
         super.onDestroy();
         Log.d(TAG, "...In onDestroy...");
         // Write to SharedPref.
-        saveArrayList(btDataList, "btDataList");
         // btAdapter.disable();
         Log.d(TAG, "finishing APP");
-        stopthreadUpdateUi = true;
-        doUnBindService();
         finish();
     }
+    */
 
     @Override
     public void onBackPressed() {

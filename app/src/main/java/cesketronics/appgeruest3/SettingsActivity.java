@@ -11,13 +11,26 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+
+
 public class SettingsActivity extends PreferenceActivity
 implements Preference.OnPreferenceChangeListener {
+
+    ArrayList<btData> btDataStatsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+
+        btDataStatsList = getArrayList("btDataList");
+
+
         Preference accumulatorEnergy = findPreference(getString(R.string.preference_accumulator_energy_key));
         accumulatorEnergy.setOnPreferenceChangeListener(this);
 
@@ -46,6 +59,7 @@ implements Preference.OnPreferenceChangeListener {
                 return true;
             }
         });
+
 
         Preference resetMacAddressBtn = findPreference(getString(R.string.preference_resetMacAddress_key));
         resetMacAddressBtn.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -76,6 +90,10 @@ implements Preference.OnPreferenceChangeListener {
                 return true;
             }
         });
+
+        if(btDataStatsList.size() > 1){
+            resetArduinoEnergyBtn.setSummary((btDataStatsList.get(btDataStatsList.size()-1).btDataEnergy)+" Wh");
+        }
     }
 
     @Override
@@ -83,5 +101,13 @@ implements Preference.OnPreferenceChangeListener {
         preference.setSummary(value.toString());
 
         return true;
+    }
+
+    public ArrayList<btData> getArrayList(String key){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsActivity.this );
+        Gson gson = new Gson();
+        String json = prefs.getString(key, null);
+        Type type = new TypeToken<ArrayList<btData>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 }
