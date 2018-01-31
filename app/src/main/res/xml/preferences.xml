@@ -13,7 +13,7 @@
             android:defaultValue="@string/preference_accumulator_energy_default"
             android:inputType="number"/>
 
-        <Preference android:title="Reset Recorded Energy"
+        <Preference android:title="Reset Recorded Energy by Arduino"
             android:key="@string/preference_resetArduinoEnergy_key"
             android:summary="Reset the used energy on Arduino"/>
 
