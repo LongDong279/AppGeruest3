@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">AppGeruest3</string>
-    <string name="voltage_text">Spannung = ????</string>
-    <string name="current_text">Strom = ????</string>
-    <string name="energy_text">Energie = ????</string>
+    <string name="voltage_text">Spannung</string>
+    <string name="current_text">Strom</string>
+    <string name="energy_text">Energie</string>
     <string name="maxEnergy_text">Enter max. E in</string>
     <string name="voltage_unit">V</string>
     <string name="current_unit">A</string>
@@ -13,11 +13,18 @@
     <string name="action_Statistics">Statistics</string>
     <string name="action_Settings">Settings</string>
     <string name="preference_accumulator_energy_key">setAccuMaxEnergy</string>
-    <string name="preference_accumulator_energy_title">Maximum Accumulator Energy</string>
+    <string name="preference_accumulator_energy_title">Maximum Accumulator Energy in Wh</string>
     <string name="preference_accumulator_energy_default">0</string>
     <string name="preference_resetArduinoEnergy_key">resetArduinoEnergy</string>
     <string name="preference_resetRecordedData_key">resetRecordedData</string>
     <string name="preference_resetMacAddress_key">resetMacAddress</string>
+    <string name="preference_accumulator_voltage_key">setMaxAccuVoltage</string>
+    <string name="preference_accumulator_voltage_title">Maximum Accumulator Voltage in V</string>
+    <string name="preference_accumulator_voltage_default">100</string>
+
+    <string name="preference_accumulator_current_key">setMaxAccuCurrent</string>
+    <string name="preference_accumulator_current_title">Maximum Accumulator Current in A</string>
+    <string name="preference_accumulator_current_default">100</string>
 
 
     <!-- Strings related to Settings -->

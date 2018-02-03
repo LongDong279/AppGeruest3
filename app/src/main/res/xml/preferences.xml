@@ -4,6 +4,10 @@
         android:title="Accumulator settings"
         android:key="Accumulator_category">
 
+        <Preference android:title="Reset Recorded Energy by Arduino"
+            android:key="@string/preference_resetArduinoEnergy_key"
+            android:summary="Reset the used energy on Arduino"/>
+
         <EditTextPreference
             android:key="@string/preference_accumulator_energy_key"
             android:title="@string/preference_accumulator_energy_title"
@@ -13,9 +17,24 @@
             android:defaultValue="@string/preference_accumulator_energy_default"
             android:inputType="number"/>
 
-        <Preference android:title="Reset Recorded Energy by Arduino"
-            android:key="@string/preference_resetArduinoEnergy_key"
-            android:summary="Reset the used energy on Arduino"/>
+        <EditTextPreference
+            android:key="@string/preference_accumulator_voltage_key"
+            android:title="@string/preference_accumulator_voltage_title"
+            android:summary="Set maximum accumulator voltage"
+            android:dialogTitle="Maximum accumulator voltage"
+            android:dialogMessage="Set maximum accumulator voltage"
+            android:defaultValue="@string/preference_accumulator_voltage_default"
+            android:inputType="number"/>
+
+        <EditTextPreference
+            android:key="@string/preference_accumulator_current_key"
+            android:title="@string/preference_accumulator_current_title"
+            android:summary="Set maximum accumulator current"
+            android:dialogTitle="Maximum accumulator current"
+            android:dialogMessage="Set maximum accumulator current"
+            android:defaultValue="@string/preference_accumulator_current_default"
+            android:inputType="number"/>
+
 
     </PreferenceCategory>
 

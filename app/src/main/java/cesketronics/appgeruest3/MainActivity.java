@@ -42,6 +42,8 @@ import android.widget.Toast;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import me.itangqi.waveloadingview.WaveLoadingView;
+import pl.pawelkleczkowski.customgauge.CustomGauge;
+
 import android.graphics.Color;
 import android.app.Notification;
 import com.google.gson.*;
@@ -52,13 +54,16 @@ public class MainActivity extends Activity {
     private static final String TAG = "bluetooth1";
 
     TextView voltageView, currentView;
-    //energyView;
 
     WaveLoadingView mWaveLoadingView;
     static ArrayList<btData> btDataList;
     BluetoothHelper btHelperService;
     boolean mIsBound = false;
-    String resetArduinosEnergy = "0";
+
+    private CustomGauge gaugeVoltage;
+    private CustomGauge gaugeCurrent;
+    double calculatingFactorVoltage = 1;
+    double calculatingFactorCurrent = 1;
 
     Thread threadUpdateUi;
     boolean stopthreadUpdateUi = false;
@@ -82,7 +87,6 @@ public class MainActivity extends Activity {
         // declare all visual xml objects as java objects
         voltageView = (TextView) findViewById(R.id.voltage_tv);
         currentView = (TextView) findViewById(R.id.current_tv);
-        //energyView = (TextView) findViewById(R.id.energy_tv);
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
 
         btDataList = new ArrayList<>();
@@ -108,6 +112,29 @@ public class MainActivity extends Activity {
         mWaveLoadingView.cancelAnimation();
         mWaveLoadingView.startAnimation();
 
+        gaugeVoltage = findViewById(R.id.gaugeVoltage);
+        gaugeCurrent = findViewById(R.id.gaugeCurrent);
+
+
+
+
+
+        // read the saved voltage of accumulator
+        SharedPreferences sPrefsVoltage = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorVoltageKey = getString(R.string.preference_accumulator_voltage_key);
+        String prefAccumulatorVoltageDefault = getString(R.string.preference_accumulator_voltage_default);
+        String AccumulatorVoltage = sPrefsVoltage.getString(prefAccumulatorVoltageKey,prefAccumulatorVoltageDefault);
+        Double maximumVoltage = Double.parseDouble(AccumulatorVoltage);
+        calculatingFactorVoltage = 100/maximumVoltage;
+
+        // read the saved current of accumulator
+        SharedPreferences sPrefsCurrent = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorCurrentKey = getString(R.string.preference_accumulator_current_key);
+        String prefAccumulatorCurrentDefault = getString(R.string.preference_accumulator_current_default);
+        String AccumulatorCurrent = sPrefsCurrent.getString(prefAccumulatorCurrentKey,prefAccumulatorCurrentDefault);
+        Double maximumCurrent = Double.parseDouble(AccumulatorCurrent);
+        calculatingFactorCurrent = 100/maximumCurrent;
+
 
         // read the saved maximum energy for accumulator
         SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -116,8 +143,8 @@ public class MainActivity extends Activity {
         String AccumulatorEnergy = sPrefs.getString(prefAccumulatorEnergyKey,prefAccumulatorEnergyDefault);
         maxEnergy = Integer.parseInt(AccumulatorEnergy);
 
-        //check if reset Arduinos Energy in BT Helper
-
+        gaugeVoltage.setValue(10);
+        gaugeCurrent.setValue(100);
 
     }
 
@@ -206,6 +233,8 @@ public class MainActivity extends Activity {
         stopthreadUpdateUi = true;
         doUnBindService();
 
+
+
     }
 
     @Override
@@ -213,6 +242,7 @@ public class MainActivity extends Activity {
         super.onResume();
         Log.d(TAG, "...In onResume()...");
         doBindService();
+
 
         /*
         btDataList.add(new btData("12,5", "3,5","0,01","3500","99",Calendar.getInstance().getTimeInMillis()));
@@ -271,9 +301,16 @@ public class MainActivity extends Activity {
     }
 
     private void updateUi() {
-        voltageView.setText("Spannung = " + btHelperService.getVoltage() + "V");    //update the textviews with sensor values
-        currentView.setText("Strom = " + btHelperService.getCurrent() + "A");
-        //energyView.setText("Energie = " + btHelperService.getEnergy()+ "Wh");
+        voltageView.setText(btHelperService.getVoltage() + "V");    //update the textviews with sensor values
+        currentView.setText(btHelperService.getCurrent() + "A");
+
+        Double dV = (calculatingFactorVoltage*(Double.parseDouble(btHelperService.getVoltage())));
+        int iV = dV.intValue();
+        Double dC = (calculatingFactorCurrent*(Double.parseDouble(btHelperService.getCurrent())));
+        int iC = dC.intValue();
+
+        gaugeVoltage.setValue(iV);
+        gaugeCurrent.setValue(iC);
 
         Float E = Float.parseFloat(btHelperService.getEnergy());
         if (maxEnergy == 0) {

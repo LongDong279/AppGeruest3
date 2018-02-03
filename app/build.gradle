@@ -30,6 +30,7 @@ dependencies {
     compile 'me.itangqi.waveloadingview:library:0.3.5'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.jjoe64:graphview:4.2.1'
+    compile 'pl.pawelkleczkowski.customgauge:CustomGauge:1.0.3'
 
 
     testCompile 'junit:junit:4.12'

@@ -19,35 +19,111 @@
             app:wlv_round_rectangle="true"
             app:wlv_triangle_direction="north"
             app:wlv_titleCenterSize="36sp" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_marginTop="8dp"
             android:layout_gravity="center">
-            <TextView
-                android:id="@+id/voltage_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="@string/voltage_text" />
-            <TextView
-                android:id="@+id/current_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:textSize="20sp"
-                android:text="@string/current_text" />
 
-           <!-- <TextView
-                android:id="@+id/energy_tv"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/energy_text"
-                android:layout_marginLeft="8dp"
-                android:textSize="10sp" />-->
+                android:orientation="horizontal">
+                <pl.pawelkleczkowski.customgauge.CustomGauge
+                    android:id="@+id/gaugeVoltage"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentBottom="true"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="10dp"
+                    android:layout_marginRight="10dp"
+                    app:gaugeEndValue="100"
+                    app:gaugePointEndColor="#00ff00"
+                    app:gaugePointStartColor="#ff0000 "
+                    app:gaugeStartAngle="180"
+                    app:gaugeStartValue="0"
+                    app:gaugeStrokeCap="BUTT"
+                    app:gaugeStrokeColor="#808080"
+                    app:gaugeStrokeWidth="20dp"
+                    app:gaugeSweepAngle="180"
+                    app:gaugeDividerSize="1"
+                    app:gaugeDividerColor="#ffff00"
+                    app:gaugeDividerStep="10"
+                    app:gaugeDividerDrawFirst="false"
+                    app:gaugeDividerDrawLast="true"
+                    />
+
+                <pl.pawelkleczkowski.customgauge.CustomGauge
+                    android:id="@+id/gaugeCurrent"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentBottom="true"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="10dp"
+                    android:layout_marginLeft="10dp"
+                    app:gaugeEndValue="100"
+                    app:gaugePointEndColor="#00ff00"
+                    app:gaugePointStartColor="#ff0000"
+                    app:gaugeStartAngle="180"
+                    app:gaugeStartValue="0"
+                    app:gaugeStrokeCap="BUTT"
+                    app:gaugeStrokeColor="#808080"
+                    app:gaugeStrokeWidth="20dp"
+                    app:gaugeSweepAngle="180"
+                    app:gaugeDividerSize="1"
+                    app:gaugeDividerColor="#ffff00"
+                    app:gaugeDividerStep="10"
+                    app:gaugeDividerDrawFirst="false"
+                    app:gaugeDividerDrawLast="true"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-100dp"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:id="@+id/voltage_tv"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:text="@string/voltage_text"
+                    android:textAlignment="center"
+                    android:textColor="#0000FF"
+                    android:textSize="20sp"
+                    android:textStyle="bold"/>
+                <Space
+                    android:layout_width="70dp"
+                    android:layout_height="50dp" />
+
+                <TextView
+                    android:id="@+id/current_tv"
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    android:text="@string/current_text"
+                    android:textColor="#FF0000"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
 
         </LinearLayout>
 
-    </LinearLayout>
+
+
+
+        </LinearLayout>
 </android.support.constraint.ConstraintLayout>

@@ -30,14 +30,6 @@ implements Preference.OnPreferenceChangeListener {
 
         btDataStatsList = getArrayList("btDataList");
 
-
-        Preference accumulatorEnergy = findPreference(getString(R.string.preference_accumulator_energy_key));
-        accumulatorEnergy.setOnPreferenceChangeListener(this);
-
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String savedAccumulatorEnergy = sharedPrefs.getString(accumulatorEnergy.getKey(), "");
-        onPreferenceChange(accumulatorEnergy, savedAccumulatorEnergy);
-
         Preference resetRecordedDataBtn = findPreference(getString(R.string.preference_resetRecordedData_key));
         resetRecordedDataBtn.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -59,6 +51,30 @@ implements Preference.OnPreferenceChangeListener {
                 return true;
             }
         });
+
+        // VOLTAGE
+        Preference accumulatorVoltage = findPreference(getString(R.string.preference_accumulator_voltage_key));
+        accumulatorVoltage.setOnPreferenceChangeListener(this);
+
+        SharedPreferences sharedPrefsVoltage = PreferenceManager.getDefaultSharedPreferences(this);
+        String savedAccumulatorVoltage = sharedPrefsVoltage.getString(accumulatorVoltage.getKey(), "");
+        onPreferenceChange(accumulatorVoltage, savedAccumulatorVoltage);
+
+        // CURRENT
+        Preference accumulatorCurrent = findPreference(getString(R.string.preference_accumulator_current_key));
+        accumulatorCurrent.setOnPreferenceChangeListener(this);
+
+        SharedPreferences sharedPrefsCurrent = PreferenceManager.getDefaultSharedPreferences(this);
+        String savedAccumulatorCurrent = sharedPrefsCurrent.getString(accumulatorCurrent.getKey(), "");
+        onPreferenceChange(accumulatorCurrent, savedAccumulatorCurrent);
+
+        // ENERGY
+        Preference accumulatorEnergy = findPreference(getString(R.string.preference_accumulator_energy_key));
+        accumulatorEnergy.setOnPreferenceChangeListener(this);
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String savedAccumulatorEnergy = sharedPrefs.getString(accumulatorEnergy.getKey(), "");
+        onPreferenceChange(accumulatorEnergy, savedAccumulatorEnergy);
 
 
         Preference resetMacAddressBtn = findPreference(getString(R.string.preference_resetMacAddress_key));
