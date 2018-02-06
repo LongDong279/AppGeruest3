@@ -59,6 +59,8 @@ public class BluetoothHelper extends Service {
     //private static final String MAC_ADDRESS = "98:D3:31:FC:3A:25"; //your MAC Address here, should be changed to select different devices
     private String MAC_ADDRESS = "0";
 
+    String resetArduinosEnergy = "0";
+
 
 
 
@@ -104,25 +106,30 @@ public class BluetoothHelper extends Service {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String resetArduinosEnergy = sharedPrefs.getString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
 
-        if((resetArduinosEnergy.equals("1")) && mConnectedThread != null){
-            resetArduinosEnergy ="0";
-            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
-            editor.commit();
-            writeToSerial("1");
-            Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
-        } else if (((resetArduinosEnergy.equals("1")) && mConnectedThread == null)) {
-            resetArduinosEnergy ="0";
-            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
-            editor.commit();
-            Toast.makeText(getBaseContext(), "To reset arduinos energy, connect first", Toast.LENGTH_LONG).show();
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        resetArduinosEnergy = sharedPrefs.getString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+
+        if(resetArduinosEnergy.equals("1")){
+            SystemClock.sleep(2000);
+            if(mConnectedThread != null){
+                resetArduinosEnergy ="0";
+                sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+                editor.commit();
+                writeToSerial("1");
+                Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
+            } else if (mConnectedThread == null) {
+                resetArduinosEnergy ="0";
+                sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+                editor.commit();
+                Toast.makeText(getBaseContext(), "To reset arduinos energy, connect first", Toast.LENGTH_LONG).show();
+            }
         }
+
 
         bluetoothIn = new Handler() {
 
@@ -191,6 +198,9 @@ public class BluetoothHelper extends Service {
     }
     */
 
+    public void resetData() {
+
+    }
 
     @Override
     public void onDestroy() {
@@ -252,6 +262,7 @@ public class BluetoothHelper extends Service {
             }
         }
     }
+
 
     public void writeToSerial(String s){
         mConnectedThread.write(s);

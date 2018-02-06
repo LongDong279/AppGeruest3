@@ -196,9 +196,6 @@ public class MainActivity extends Activity {
         saveArrayList(btDataList, "btDataList");
         stopthreadUpdateUi = true;
         doUnBindService();
-
-
-
     }
 
     @Override
