@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.UUID;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
@@ -21,6 +22,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -53,15 +56,15 @@ import com.google.gson.reflect.TypeToken;
 public class MainActivity extends Activity {
     private static final String TAG = "bluetooth1";
 
-    TextView voltageView, currentView;
+    static TextView voltageView, currentView;
 
-    WaveLoadingView mWaveLoadingView;
+    static WaveLoadingView mWaveLoadingView;
     static ArrayList<btData> btDataList;
     BluetoothHelper btHelperService;
     boolean mIsBound = false;
 
-    private CustomGauge gaugeVoltage;
-    private CustomGauge gaugeCurrent;
+    private static CustomGauge gaugeVoltage;
+    private static CustomGauge gaugeCurrent;
     double calculatingFactorVoltage = 1;
     double calculatingFactorCurrent = 1;
 
@@ -82,19 +85,9 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-
-
-        // declare all visual xml objects as java objects
         voltageView = (TextView) findViewById(R.id.voltage_tv);
         currentView = (TextView) findViewById(R.id.current_tv);
         mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
-
-        btDataList = new ArrayList<>();
-        btDataList = getArrayList("btDataList");
-
-        if (btDataList == null){
-            btDataList = new ArrayList<>();
-        }
 
         mWaveLoadingView.setShapeType(WaveLoadingView.ShapeType.CIRCLE);
         mWaveLoadingView.setCenterTitleColor(Color.DKGRAY);
@@ -116,35 +109,6 @@ public class MainActivity extends Activity {
         gaugeCurrent = findViewById(R.id.gaugeCurrent);
 
 
-
-
-
-        // read the saved voltage of accumulator
-        SharedPreferences sPrefsVoltage = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefAccumulatorVoltageKey = getString(R.string.preference_accumulator_voltage_key);
-        String prefAccumulatorVoltageDefault = getString(R.string.preference_accumulator_voltage_default);
-        String AccumulatorVoltage = sPrefsVoltage.getString(prefAccumulatorVoltageKey,prefAccumulatorVoltageDefault);
-        Double maximumVoltage = Double.parseDouble(AccumulatorVoltage);
-        calculatingFactorVoltage = 100/maximumVoltage;
-
-        // read the saved current of accumulator
-        SharedPreferences sPrefsCurrent = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefAccumulatorCurrentKey = getString(R.string.preference_accumulator_current_key);
-        String prefAccumulatorCurrentDefault = getString(R.string.preference_accumulator_current_default);
-        String AccumulatorCurrent = sPrefsCurrent.getString(prefAccumulatorCurrentKey,prefAccumulatorCurrentDefault);
-        Double maximumCurrent = Double.parseDouble(AccumulatorCurrent);
-        calculatingFactorCurrent = 100/maximumCurrent;
-
-
-        // read the saved maximum energy for accumulator
-        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String prefAccumulatorEnergyKey = getString(R.string.preference_accumulator_energy_key);
-        String prefAccumulatorEnergyDefault = getString(R.string.preference_accumulator_energy_default);
-        String AccumulatorEnergy = sPrefs.getString(prefAccumulatorEnergyKey,prefAccumulatorEnergyDefault);
-        maxEnergy = Integer.parseInt(AccumulatorEnergy);
-
-        gaugeVoltage.setValue(10);
-        gaugeCurrent.setValue(100);
 
     }
 
@@ -241,18 +205,106 @@ public class MainActivity extends Activity {
     public void onResume(){
         super.onResume();
         Log.d(TAG, "...In onResume()...");
+
+        btDataList = new ArrayList<>();
+        btDataList = getArrayList("btDataList");
+
+        if (btDataList == null){
+            btDataList = new ArrayList<>();
+        }
+
+        // read the saved voltage of accumulator
+        SharedPreferences sPrefsVoltage = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorVoltageKey = getString(R.string.preference_accumulator_voltage_key);
+        String prefAccumulatorVoltageDefault = getString(R.string.preference_accumulator_voltage_default);
+        String AccumulatorVoltage = sPrefsVoltage.getString(prefAccumulatorVoltageKey,prefAccumulatorVoltageDefault);
+        Double maximumVoltage = Double.parseDouble(AccumulatorVoltage);
+        calculatingFactorVoltage = 100/maximumVoltage;
+
+        // read the saved current of accumulator
+        SharedPreferences sPrefsCurrent = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorCurrentKey = getString(R.string.preference_accumulator_current_key);
+        String prefAccumulatorCurrentDefault = getString(R.string.preference_accumulator_current_default);
+        String AccumulatorCurrent = sPrefsCurrent.getString(prefAccumulatorCurrentKey,prefAccumulatorCurrentDefault);
+        Double maximumCurrent = Double.parseDouble(AccumulatorCurrent);
+        calculatingFactorCurrent = 100/maximumCurrent;
+
+
+        // read the saved maximum energy for accumulator
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorEnergyKey = getString(R.string.preference_accumulator_energy_key);
+        String prefAccumulatorEnergyDefault = getString(R.string.preference_accumulator_energy_default);
+        String AccumulatorEnergy = sPrefs.getString(prefAccumulatorEnergyKey,prefAccumulatorEnergyDefault);
+        maxEnergy = Integer.parseInt(AccumulatorEnergy);
+
+        /*
+        // declare all visual xml objects as java objects
+        voltageView = (TextView) findViewById(R.id.voltage_tv);
+        currentView = (TextView) findViewById(R.id.current_tv);
+        mWaveLoadingView = (WaveLoadingView) findViewById(R.id.waveLoadingView);
+
+        btDataList = new ArrayList<>();
+        btDataList = getArrayList("btDataList");
+
+        if (btDataList == null){
+            btDataList = new ArrayList<>();
+        }
+
+        mWaveLoadingView.setShapeType(WaveLoadingView.ShapeType.CIRCLE);
+        mWaveLoadingView.setCenterTitleColor(Color.DKGRAY);
+        mWaveLoadingView.setCenterTitleStrokeColor(Color.LTGRAY);
+        mWaveLoadingView.setCenterTitleStrokeWidth(2);
+        mWaveLoadingView.setProgressValue(20);
+        mWaveLoadingView.setBorderWidth(10);
+        mWaveLoadingView.setAmplitudeRatio(20);
+        mWaveLoadingView.setWaveColor(Color.argb(255,255,0,0));
+        mWaveLoadingView.setBorderColor(Color.DKGRAY);
+        mWaveLoadingView.setCenterTitle("No BT-Device connected");
+        mWaveLoadingView.setAnimDuration(5000);
+        mWaveLoadingView.pauseAnimation();
+        mWaveLoadingView.resumeAnimation();
+        mWaveLoadingView.cancelAnimation();
+        mWaveLoadingView.startAnimation();
+
+        gaugeVoltage = findViewById(R.id.gaugeVoltage);
+        gaugeCurrent = findViewById(R.id.gaugeCurrent);
+
+        // read the saved voltage of accumulator
+        SharedPreferences sPrefsVoltage = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorVoltageKey = getString(R.string.preference_accumulator_voltage_key);
+        String prefAccumulatorVoltageDefault = getString(R.string.preference_accumulator_voltage_default);
+        String AccumulatorVoltage = sPrefsVoltage.getString(prefAccumulatorVoltageKey,prefAccumulatorVoltageDefault);
+        Double maximumVoltage = Double.parseDouble(AccumulatorVoltage);
+        calculatingFactorVoltage = 100/maximumVoltage;
+
+        // read the saved current of accumulator
+        SharedPreferences sPrefsCurrent = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorCurrentKey = getString(R.string.preference_accumulator_current_key);
+        String prefAccumulatorCurrentDefault = getString(R.string.preference_accumulator_current_default);
+        String AccumulatorCurrent = sPrefsCurrent.getString(prefAccumulatorCurrentKey,prefAccumulatorCurrentDefault);
+        Double maximumCurrent = Double.parseDouble(AccumulatorCurrent);
+        calculatingFactorCurrent = 100/maximumCurrent;
+
+
+        // read the saved maximum energy for accumulator
+        SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefAccumulatorEnergyKey = getString(R.string.preference_accumulator_energy_key);
+        String prefAccumulatorEnergyDefault = getString(R.string.preference_accumulator_energy_default);
+        String AccumulatorEnergy = sPrefs.getString(prefAccumulatorEnergyKey,prefAccumulatorEnergyDefault);
+        maxEnergy = Integer.parseInt(AccumulatorEnergy);
+
+
+        */
+
+        UISetFirstTime = true;
+        stopthreadUpdateUi = false;
+
+
+
+
         doBindService();
 
 
-        /*
-        btDataList.add(new btData("12,5", "3,5","0,01","3500","99",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,5","0,02","3500","98",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,1","0,03","3500","97",Calendar.getInstance().getTimeInMillis()));
-        SystemClock.sleep(2000);
-        btDataList.add(new btData("12,5", "3,7","0,04","3500","96",Calendar.getInstance().getTimeInMillis()));
-*/
 
         threadUpdateUi = new Thread(new Runnable() {
             public void run() {
@@ -265,9 +317,9 @@ public class MainActivity extends Activity {
                                     public void run() {
                                         updateUi();
                                         updateDataList();
+
                                     }
                                 });
-
                             }
                         }
                     } catch (Exception ex) {
@@ -277,9 +329,6 @@ public class MainActivity extends Activity {
             }
         });
         threadUpdateUi.start();
-
-
-
 
 
     }
@@ -301,12 +350,15 @@ public class MainActivity extends Activity {
     }
 
     private void updateUi() {
-        voltageView.setText(btHelperService.getVoltage() + "V");    //update the textviews with sensor values
-        currentView.setText(btHelperService.getCurrent() + "A");
+        String voltage = btHelperService.getVoltage();
+        String current = btHelperService.getCurrent();
 
-        Double dV = (calculatingFactorVoltage*(Double.parseDouble(btHelperService.getVoltage())));
+        voltageView.setText(voltage + "V");    //update the textviews with sensor values
+        currentView.setText(current + "A");
+
+        Double dV = (calculatingFactorVoltage*(Double.parseDouble(voltage)));
         int iV = dV.intValue();
-        Double dC = (calculatingFactorCurrent*(Double.parseDouble(btHelperService.getCurrent())));
+        Double dC = (calculatingFactorCurrent*(Double.parseDouble(current)));
         int iC = dC.intValue();
 
         gaugeVoltage.setValue(iV);
@@ -411,7 +463,6 @@ public class MainActivity extends Activity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             btHelperService = ((BluetoothHelper.btBinder)service).getService();
-            Toast.makeText(getBaseContext(), "Service connected", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -434,7 +485,15 @@ public class MainActivity extends Activity {
         }
     }
 
-
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 
