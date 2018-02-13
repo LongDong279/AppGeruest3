@@ -55,9 +55,9 @@
         android:key="Connection_category">
 
 
-        <Preference android:title="Choose Bluetooth Device"
+        <Preference android:title="Select Bluetooth Device"
             android:key="@string/preference_resetMacAddress_key"
-            android:summary="Select Bluetooth Device"/>
+            android:summary="Select BT-Device which is connected to Arduino"/>
 
 
     </PreferenceCategory>
