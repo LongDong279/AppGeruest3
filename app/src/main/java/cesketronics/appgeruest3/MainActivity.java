@@ -367,7 +367,7 @@ public class MainActivity extends Activity {
 
         Float E = Float.parseFloat(btHelperService.getEnergy());
         if (maxEnergy == 0) {
-            mWaveLoadingView.setCenterTitle("Enter E first");
+            mWaveLoadingView.setCenterTitle("Enter maximum E first");
         } else {
             percentage = getPercentage(E);
             comparePercentage(percentage);
