@@ -211,8 +211,8 @@ public class MainActivity extends Activity {
         }
 
         mWaveLoadingView.setCenterTitle("No BT-Device connected");
-        voltageView.setText("Spannung");    //update the textviews with sensor values
-        currentView.setText("Strom");
+        voltageView.setText("Voltage");    //update the textviews with sensor values
+        currentView.setText("Current");
 
         // read the saved voltage of accumulator
         SharedPreferences sPrefsVoltage = PreferenceManager.getDefaultSharedPreferences(this);

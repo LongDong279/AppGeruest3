@@ -140,20 +140,20 @@ public class StatsActivity extends Activity {
                     dataSeriesVoltage.setThickness(5);
                     dataSeriesVoltage.setColor(Color.BLUE);
                     dataSeriesVoltage.setDrawDataPoints(false);
-                    dataSeriesVoltage.setTitle("Spannung");
+                    dataSeriesVoltage.setTitle("Voltage");
 
 
                     dataSeriesCurrent = new LineGraphSeries<>(valuesCurrent);
                     dataSeriesCurrent.setThickness(5);
                     dataSeriesCurrent.setColor(Color.RED);
                     dataSeriesCurrent.setDrawDataPoints(false);
-                    dataSeriesCurrent.setTitle("Strom");
+                    dataSeriesCurrent.setTitle("Current");
 
                     dataSeriesEnergy = new LineGraphSeries<>(valuesEnergy);
                     dataSeriesEnergy.setThickness(5);
                     dataSeriesEnergy.setColor(Color.YELLOW);
                     dataSeriesEnergy.setDrawDataPoints(false);
-                    dataSeriesEnergy.setTitle("Restenergie Akku");
+                    dataSeriesEnergy.setTitle("Accumulator Energy");
 
 
 
