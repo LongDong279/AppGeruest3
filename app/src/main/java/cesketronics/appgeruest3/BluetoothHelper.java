@@ -198,9 +198,6 @@ public class BluetoothHelper extends Service {
     }
     */
 
-    public void resetData() {
-
-    }
 
     @Override
     public void onDestroy() {

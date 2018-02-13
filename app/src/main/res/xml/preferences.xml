@@ -4,9 +4,9 @@
         android:title="Accumulator settings"
         android:key="Accumulator_category">
 
-        <Preference android:title="Reset Recorded Energy by Arduino"
+        <Preference android:title="Reset Recorded Energy"
             android:key="@string/preference_resetArduinoEnergy_key"
-            android:summary="Reset the used energy on Arduino"/>
+            android:summary="Reset the recorded accumulator energy on Arduino"/>
 
         <EditTextPreference
             android:key="@string/preference_accumulator_energy_key"
@@ -45,7 +45,7 @@
 
         <Preference android:title="Reset Recorded Data"
             android:key="@string/preference_resetRecordedData_key"
-            android:summary="Reset the recorded accumulator statistics"/>
+            android:summary="Reset recorded statistics on mobile phone"/>
 
     </PreferenceCategory>
 
@@ -57,7 +57,7 @@
 
         <Preference android:title="Choose Bluetooth Device"
             android:key="@string/preference_resetMacAddress_key"
-            android:summary="Select preferred Bluetooth Device"/>
+            android:summary="Select Bluetooth Device"/>
 
 
     </PreferenceCategory>
