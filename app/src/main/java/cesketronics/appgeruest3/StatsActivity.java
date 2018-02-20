@@ -1,6 +1,7 @@
 package cesketronics.appgeruest3;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.ColorSpace;
 import android.icu.text.MessageFormat;
 import android.icu.text.TimeZoneFormat;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,8 +31,15 @@ import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.jjoe64.graphview.series.OnDataPointTapListener;
 import com.jjoe64.graphview.series.Series;
+import com.opencsv.CSVWriter;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,7 +51,7 @@ import java.util.Locale;
 
 
 public class StatsActivity extends Activity {
-    Button loadStatsButton, voltageEnableBtn, currentEnableBtn, energyEnableBtn ;
+    Button loadStatsButton, voltageEnableBtn, currentEnableBtn, energyEnableBtn, exportCSVBtn ;
     private static final String TAG = "bluetooth1";
     ArrayList<btData> btDataStatsList;
     GraphView graph;
@@ -65,6 +74,7 @@ public class StatsActivity extends Activity {
         energyEnableBtn =(Button)findViewById(R.id.enableEnergyBtn);
         currentEnableBtn =(Button)findViewById(R.id.enableCurrentBtn);
         voltageEnableBtn =(Button)findViewById(R.id.enableVoltageBtn);
+        exportCSVBtn = (Button) findViewById(R.id.exportCSVBtn);
 
         graph = (GraphView) findViewById(R.id.graph);
         dataSeriesCurrent = new LineGraphSeries<>();
@@ -108,6 +118,61 @@ public class StatsActivity extends Activity {
                     graph.addSeries(dataSeriesCurrent);
                     currentEnable = true;
                 }
+            }
+        });
+
+        exportCSVBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                btDataStatsList = getArrayList("btDataList");
+
+
+                String baseDir = android.os.Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+
+                String filePath = baseDir + File.separator;
+
+                // Create the file.
+                File file = new File(filePath, "AkkuExportData.csv");
+
+
+                String[] stringArray = new String[btDataStatsList.size()];
+
+                    for (int z = 0; z<btDataStatsList.size(); z++) {
+                        String timeAndDay = sdf.format(btDataStatsList.get(z).btTime);
+                        stringArray[z] = String.valueOf(timeAndDay)+","+String.valueOf(btDataStatsList.get(z).btDataVoltage)+","+String.valueOf(btDataStatsList.get(z).btDataCurrent)+","+String.valueOf(btDataStatsList.get(z).btDataEnergy)+","+String.valueOf(btDataStatsList.get(z).btDataMaxEnergySet)+"\r\n";
+                    }
+
+                try
+                {
+                    file.createNewFile();
+                    FileOutputStream fOut = new FileOutputStream(file);
+                    OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+
+                    myOutWriter.append("Datum,Spannung,Strom,Energie,Akkuenergie");
+
+
+                    for (int z = 0; z< stringArray.length ; z++) {
+                        myOutWriter.append(stringArray[z]);
+                    }
+
+
+                    myOutWriter.close();
+
+                    fOut.flush();
+                    fOut.close();
+
+                    Toast.makeText(getBaseContext(), "Data successfully exported", Toast.LENGTH_LONG).show();
+
+                }
+                catch (IOException e)
+                {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
+
+
+
+
             }
         });
 
@@ -204,5 +269,7 @@ public class StatsActivity extends Activity {
         Type type = new TypeToken<ArrayList<btData>>() {}.getType();
         return gson.fromJson(json, type);
     }
+
+
 
 }
