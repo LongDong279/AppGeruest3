@@ -149,7 +149,7 @@ public class StatsActivity extends Activity {
                     FileOutputStream fOut = new FileOutputStream(file);
                     OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
 
-                    myOutWriter.append("Datum,Spannung,Strom,Energie,Akkuenergie");
+                    myOutWriter.append("Datum,Spannung,Strom,Energie,Akkuenergie"+"\r\n");
 
 
                     for (int z = 0; z< stringArray.length ; z++) {
