@@ -46,6 +46,8 @@ public class BluetoothHelper extends Service {
 
     public boolean dataReceived = false;
 
+    static boolean serviceEnabled = false;
+
 
 
 
@@ -96,6 +98,7 @@ public class BluetoothHelper extends Service {
         super.onCreate();
 
         stopThread = false;
+        serviceEnabled = true;
 
 
 
@@ -212,6 +215,7 @@ public class BluetoothHelper extends Service {
         if (mConnectingThread != null) {
             mConnectingThread.closeSocket();
         }
+        serviceEnabled = false;
 
 
         Log.d("SERVICE", "onDestroy");
@@ -246,7 +250,11 @@ public class BluetoothHelper extends Service {
                 }
             } else {
                 Log.d("BT SERVICE", "BLUETOOTH NOT ON, STOPPING SERVICE");
-                stopSelf();
+                //stopSelf();
+                btAdapter.enable(); // enable Bluetooth when Bluetooth is off
+                Toast.makeText(getBaseContext(), "Bluetooth enabling...", Toast.LENGTH_LONG).show();
+                SystemClock.sleep(3000); // let phone enable bluetooth and wait some time
+                checkBTState(); // checkBTState Again
             }
         }
     }

@@ -162,7 +162,7 @@ public class StatsActivity extends Activity {
                     fOut.flush();
                     fOut.close();
 
-                    Toast.makeText(getBaseContext(), "Data successfully exported", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getBaseContext(), "Data successfully exported to Download folder", Toast.LENGTH_LONG).show();
 
                 }
                 catch (IOException e)
