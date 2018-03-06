@@ -40,7 +40,6 @@ public class BluetoothHelper extends Service {
     private BluetoothAdapter btAdapter = null;
     public static final long NOTIFY_INTERVAL = 10000;
     // run on another Thread to avoid crash
-    private Handler mHandler = new Handler();
 
     private final IBinder mBinder = new btBinder();
 
@@ -168,7 +167,10 @@ public class BluetoothHelper extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("onStartCommand", "Startid: "+startId + ":" + intent);
         Log.d("BT SERVICE", "SERVICE STARTED");
+        Log.d("BT Service", "Started as Sticky service");
         // Handler, btAdapter & checkBTState was here before
+        //return START_STICKY;
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -199,9 +201,8 @@ public class BluetoothHelper extends Service {
         if (mConnectingThread != null) {
             mConnectingThread.closeSocket();
         }
-
-
-
+        Log.d("SERVICE", "nextstep stopself");
+        stopSelf();
     }
 
 
