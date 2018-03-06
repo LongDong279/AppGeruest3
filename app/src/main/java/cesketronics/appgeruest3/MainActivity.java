@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
             showNotification(String.valueOf(oPercent));
         } else {
             nPercent = i;
-            if (nPercent < oPercent){
+            if (nPercent != oPercent){
                 oPercent = nPercent;
                 showNotification(String.valueOf(oPercent));
                 percentageDifference = true;
@@ -191,6 +191,7 @@ public class MainActivity extends Activity {
             btDataList = new ArrayList<>();
         }
 
+
         mWaveLoadingView.setCenterTitle("No BT-Device connected");
         voltageView.setText("Voltage");    //update the textviews with sensor values
         currentView.setText("Current");
@@ -222,6 +223,7 @@ public class MainActivity extends Activity {
         UISetFirstTime = true;
         stopthreadUpdateUi = false;
 
+
         doBindService();
 
         threadUpdateUi = new Thread(new Runnable() {
@@ -240,8 +242,12 @@ public class MainActivity extends Activity {
                                 });
                             }
                         }
+
                     } catch (Exception ex) {
                         stopthreadUpdateUi = true;
+                        mWaveLoadingView.setCenterTitle("Connection Error");
+                        mWaveLoadingView.setProgressValue(100);
+                        mWaveLoadingView.setWaveColor(Color.argb(255, 255, 0, 0));
                     }
                 }
             }
@@ -254,13 +260,6 @@ public class MainActivity extends Activity {
     @Override
     public void onStop(){
         super.onStop();
-        /*
-        unbindService(mConnection);
-        mIsBound = false;
-        saveArrayList(btDataList, "btDataList");
-        stopthreadUpdateUi = true;
-        doUnBindService();
-        */
     }
 
     private void updateDataList() {
@@ -283,9 +282,6 @@ public class MainActivity extends Activity {
         gaugeCurrent.setValue(iC);
 
         Float E = Float.parseFloat(btHelperService.getEnergy());
-        if(BluetoothHelper.serviceEnabled == false){
-            mWaveLoadingView.setCenterTitle("BT service disabled");
-        } else {
             if (maxEnergy == 0) {
                 mWaveLoadingView.setCenterTitle("Enter maximum E first");
             } else {
@@ -320,7 +316,6 @@ public class MainActivity extends Activity {
                     }
                 }
             }
-        }
     }
 
     @Override

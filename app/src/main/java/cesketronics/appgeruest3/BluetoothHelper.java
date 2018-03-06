@@ -46,8 +46,6 @@ public class BluetoothHelper extends Service {
 
     public boolean dataReceived = false;
 
-    static boolean serviceEnabled = false;
-
 
 
 
@@ -62,6 +60,7 @@ public class BluetoothHelper extends Service {
     private String MAC_ADDRESS = "0";
 
     String resetArduinosEnergy = "0";
+    boolean flagToReset = false;
 
 
 
@@ -88,7 +87,6 @@ public class BluetoothHelper extends Service {
     public class btBinder extends Binder {
         BluetoothHelper getService() {
             // Return this instance of LocalService so clients can call public methods
-            Log.d("Service", "Service successfully binded ");
             return BluetoothHelper.this;
         }
     }
@@ -96,9 +94,7 @@ public class BluetoothHelper extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
         stopThread = false;
-        serviceEnabled = true;
 
 
 
@@ -114,23 +110,12 @@ public class BluetoothHelper extends Service {
         resetArduinosEnergy = sharedPrefs.getString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
 
         if(resetArduinosEnergy.equals("1")){
-            SystemClock.sleep(2000);
-            if(mConnectedThread != null){
-                resetArduinosEnergy ="0";
-                sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-                SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
-                editor.commit();
-                writeToSerial("1");
-                Toast.makeText(getBaseContext(), "Reset Energy", Toast.LENGTH_SHORT).show();
-            } else if (mConnectedThread == null) {
-                resetArduinosEnergy ="0";
-                sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-                SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
-                editor.commit();
-                Toast.makeText(getBaseContext(), "To reset arduinos energy, connect first", Toast.LENGTH_LONG).show();
-            }
+            flagToReset = true;
+            resetArduinosEnergy ="0";
+            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString((getString(R.string.preference_resetArduinoEnergy_key)), "0");
+            editor.commit();
         }
 
 
@@ -205,8 +190,7 @@ public class BluetoothHelper extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-
+        Log.d("SERVICE", "onDestroy");
         bluetoothIn.removeCallbacksAndMessages(null);
         stopThread = true;
         if (mConnectedThread != null) {
@@ -215,10 +199,9 @@ public class BluetoothHelper extends Service {
         if (mConnectingThread != null) {
             mConnectingThread.closeSocket();
         }
-        serviceEnabled = false;
 
 
-        Log.d("SERVICE", "onDestroy");
+
     }
 
 
@@ -235,6 +218,7 @@ public class BluetoothHelper extends Service {
         if (btAdapter == null) {
             Log.d("BT SERVICE", "BLUETOOTH NOT SUPPORTED BY DEVICE, STOPPING SERVICE");
             stopSelf();
+
         } else {
             if (btAdapter.isEnabled()) {
                 Log.d("DEBUG BT", "BT ENABLED! BT ADDRESS : " + btAdapter.getAddress() + " , BT NAME : " + btAdapter.getName());
@@ -246,7 +230,9 @@ public class BluetoothHelper extends Service {
                 } catch (IllegalArgumentException e) {
                     Log.d("DEBUG BT", "PROBLEM WITH MAC ADDRESS : " + e.toString());
                     Log.d("BT SEVICE", "ILLEGAL MAC ADDRESS, STOPPING SERVICE");
+
                     stopSelf();
+
                 }
             } else {
                 Log.d("BT SERVICE", "BLUETOOTH NOT ON, STOPPING SERVICE");
@@ -285,7 +271,7 @@ public class BluetoothHelper extends Service {
             Log.d("DEBUG BT", "MAC ADDRESS : " + MAC_ADDRESS);
             Log.d("DEBUG BT", "BT UUID : " + BTMODULEUUID);
             try {
-                temp = mmDevice.createRfcommSocketToServiceRecord(BTMODULEUUID);
+                temp = mmDevice.createRfcommSocketToServiceRecord(BTMODULEUUID); // createRfcommSocketToServiceRecord changed to createInsecureRfcommSocketToServiceRecord
                 Log.d("DEBUG BT", "SOCKET CREATED : " + temp.toString());
             } catch (IOException e) {
                 Log.d("DEBUG BT", "SOCKET CREATION FAILED :" + e.toString());
@@ -381,6 +367,11 @@ public class BluetoothHelper extends Service {
                     Log.d("DEBUG BT PART", "CONNECTED THREAD " + readMessage);
                     // Send the obtained bytes to the UI Activity via handler
                     bluetoothIn.obtainMessage(handlerState, bytes, -1, readMessage).sendToTarget();
+                    if (flagToReset){
+                        writeToSerial("1");
+                        flagToReset =false;
+                    }
+
                 } catch (IOException e) {
                     Log.d("DEBUG BT", e.toString());
                     Log.d("BT SERVICE", "UNABLE TO READ/WRITE, STOPPING SERVICE");
