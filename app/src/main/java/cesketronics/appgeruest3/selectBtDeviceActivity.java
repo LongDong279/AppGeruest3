@@ -35,7 +35,7 @@ public class selectBtDeviceActivity extends Activity {
         listView = (ListView) findViewById(R.id.listView);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBluetoothAdapter.startDiscovery();
+        //mBluetoothAdapter.startDiscovery();
 
         pairedDevices = mBluetoothAdapter.getBondedDevices();
         ArrayList<String> list = new ArrayList<String>();

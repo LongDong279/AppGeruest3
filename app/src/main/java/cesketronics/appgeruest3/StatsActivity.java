@@ -148,22 +148,15 @@ public class StatsActivity extends Activity {
                     file.createNewFile();
                     FileOutputStream fOut = new FileOutputStream(file);
                     OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-
                     myOutWriter.append("Datum,Spannung,Strom,Energie,Akkuenergie"+"\r\n");
-
-
                     for (int z = 0; z< stringArray.length ; z++) {
                         myOutWriter.append(stringArray[z]);
                     }
-
-
                     myOutWriter.close();
-
                     fOut.flush();
                     fOut.close();
 
                     Toast.makeText(getBaseContext(), "Data successfully exported to Download folder", Toast.LENGTH_LONG).show();
-
                 }
                 catch (IOException e)
                 {
